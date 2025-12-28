@@ -23,6 +23,8 @@ import colour
 import cv2
 import numpy as np
 
+from colour_checker_detection import utilities  # noqa: F401
+
 # isort: split
 
 from .detection import (
