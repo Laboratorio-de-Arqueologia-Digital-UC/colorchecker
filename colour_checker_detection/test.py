@@ -113,6 +113,7 @@ def get_ideal_swatch_centers(working_width: int, working_height: int) -> np.ndar
     w = working_width
     h = working_height
     
+    # Grid simple de centros
     xs = np.linspace(w / (sw_h * 2), w - w / (sw_h * 2), sw_h)
     ys = np.linspace(h / (sw_v * 2), h - h / (sw_v * 2), sw_v)
     
@@ -120,17 +121,18 @@ def get_ideal_swatch_centers(working_width: int, working_height: int) -> np.ndar
     for y in ys:
         for x in xs:
             centers.append([x, y])
-    return np.array(centers, dtype=np.float32).reshape(-1, 1, 2)
+    return np.array(centers, dtype=np.float32) # (24, 2)
 
 
 def visualize_comparison(
     image: NDArrayFloat,
     results_dict: dict[str, Any],
     bbox_cache_inference: list,
-    filename: str
+    filename: str,
+    resolution_settings: dict[str, int] # Needed for swatches projection
 ) -> None:
     """
-    Visualiza los resultados de múltiples métodos.
+    Visualiza Resultados + Swatches Batches
     """
     
     methods = list(results_dict.keys())
@@ -139,12 +141,23 @@ def visualize_comparison(
     if n_methods == 0:
         return
 
-    # Gamma correction para visualización y clipping
     img_display = np.clip(np.power(image, 1 / 2.2), 0, 1)
     
-    # 1 Fila, N Columnas (LIMPIO)
+    # Config para proyección de swatches
+    w_work = resolution_settings["working_width"]
+    h_work = resolution_settings["working_height"]
+    ideal_centers = get_ideal_swatch_centers(w_work, h_work)
+    # Ideal rect (canonical space)
+    rectangle = np.array([
+        [w_work, 0],
+        [w_work, h_work],
+        [0, h_work],
+        [0, 0]
+    ], dtype=np.float32)
+    
+    
     fig, axes = plt.subplots(1, n_methods, figsize=(6 * n_methods, 6), squeeze=False)
-    fig.suptitle(f"Comparación de Detección: {filename}", fontsize=16, weight='bold')
+    fig.suptitle(f"Detección de Batches de Color: {filename}", fontsize=16, weight='bold')
    
     for idx, method in enumerate(methods):
         ax = axes[0, idx]
@@ -152,9 +165,8 @@ def visualize_comparison(
         ax.set_title(method, fontsize=12)
         ax.axis('off')
         
-        # Inferencia BBox (Directo de YOLO)
+        # 1. BBox YOLO
         if method == "Inferencia" and bbox_cache_inference:
-            # Solo mostrar el de mayor confianza (que ya filtramos en run_benchmark)
             if len(bbox_cache_inference) > 0:
                 best_bbox = bbox_cache_inference[0] 
                 x1, y1, x2, y2 = best_bbox
@@ -172,9 +184,9 @@ def visualize_comparison(
             ax.text(0.5, 0.5, "No detectado", color='red', 
                     ha='center', transform=ax.transAxes, fontsize=12)
         else:
-            # Dibujar BBox MAGENTA (Calculado) - Solo para el mejor candidato
             detection = detections[0]
             
+            # 2. BBox Calculation
             if hasattr(detection, 'quadrilateral') and detection.quadrilateral is not None:
                 quad = detection.quadrilateral
                 x_coords = quad[:, 0]
@@ -190,6 +202,36 @@ def visualize_comparison(
                     linewidth=3, edgecolor='#FF00FF', facecolor='none', linestyle='solid'
                 )
                 ax.add_patch(rect_calc)
+                
+                # 3. VISUALIZE SWATCHES (BATCHES)
+                # Compute Homography from Canonical Rectangle -> Detected Quad
+                # Note: getPerspectiveTransform finds H such that: dst = H * src
+                # We want map canonical points (src) -> image points (dst)
+                # So src=rectangle, dst=quad
+                try:
+                    H = cv2.getPerspectiveTransform(rectangle, quad.astype(np.float32))
+                    
+                    # Project ideal centers
+                    # points must be shaped (N, 1, 2) for perspectiveTransform
+                    centers_reshaped = ideal_centers.reshape(-1, 1, 2)
+                    projected_centers = cv2.perspectiveTransform(centers_reshaped, H)
+                    
+                    projected_centers = projected_centers.reshape(-1, 2)
+                    
+                    # Scatter plot swatches
+                    # Usamos scatter para mostrar los puntos de muestreo
+                    ax.scatter(
+                        projected_centers[:, 0], 
+                        projected_centers[:, 1], 
+                        c='yellow', s=10, marker='x', label='Swatches'
+                    )
+                    
+                    # Optional: Verify if swatches are inside BBox implicitly
+                    # Visualmente se ve si caen dentro.
+                    
+                except Exception as e:
+                    LOGGER.warning("Error proyectando swatches: %s", e)
+
 
     plt.tight_layout()
     plt.show()
@@ -258,7 +300,6 @@ def run_benchmark(
             # --- MÉTODO 1: SEGMENTACIÓN ---
             LOGGER.info(">> Ejecutando SEGMENTACIÓN...")
             try:
-                # Solo Detección (Sin debug manual)
                 res_seg = detect_colour_checkers_segmentation(
                     img_processing, 
                     segmenter_kwargs=resolution_settings,
@@ -317,8 +358,8 @@ def run_benchmark(
                 LOGGER.warning("   Fallo en plantillas: %s (Tipo: %s)", e, type(e).__name__)
                 results["Plantillas"] = []
 
-            # Visualizar comparación (Limpia)
-            visualize_comparison(img_processing, results, inference_bboxes, img_path.name)
+            # Visualizar comparación con Swatches
+            visualize_comparison(img_processing, results, inference_bboxes, img_path.name, resolution_settings)
 
         except Exception:
             LOGGER.exception("Error procesando imagen %s", img_path.name)
