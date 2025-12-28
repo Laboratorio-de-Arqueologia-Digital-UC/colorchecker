@@ -104,11 +104,18 @@ def adapter_yolo_inferencer(image: NDArrayFloat, model: YOLO, bbox_cache: list =
     return inference_data
 
 
-def get_ideal_swatch_centers(working_width: int, working_height: int) -> np.ndarray:
-    """Calcula los centros ideales de los parches."""
+def get_dynamic_swatch_centers(working_width: int, working_height: int, is_vertical=False) -> np.ndarray:
+    """
+    Calcula los centros ideales de los parches adaptándose a la orientación detectada.
+    """
     settings = SETTINGS_DETECTION_COLORCHECKER_CLASSIC
-    sw_h = settings["swatches_horizontal"] # 6
-    sw_v = settings["swatches_vertical"]   # 4
+    # Por defecto 'swatches_horizontal': 6, 'swatches_vertical': 4
+    if is_vertical:
+        sw_h = settings["swatches_vertical"]   # 4
+        sw_v = settings["swatches_horizontal"] # 6
+    else:
+        sw_h = settings["swatches_horizontal"] # 6
+        sw_v = settings["swatches_vertical"]   # 4
     
     w = working_width
     h = working_height
@@ -129,10 +136,10 @@ def visualize_comparison(
     results_dict: dict[str, Any],
     bbox_cache_inference: list,
     filename: str,
-    resolution_settings: dict[str, int] # Needed for swatches projection
+    resolution_settings: dict[str, int]
 ) -> None:
     """
-    Visualiza Resultados + Swatches Batches
+    Visualiza Resultados + Swatches Batches (CON DETECCIÓN DINÁMICA DE TOPOLOGÍA)
     """
     
     methods = list(results_dict.keys())
@@ -143,18 +150,9 @@ def visualize_comparison(
 
     img_display = np.clip(np.power(image, 1 / 2.2), 0, 1)
     
-    # Config para proyección de swatches
+    # Config base
     w_work = resolution_settings["working_width"]
     h_work = resolution_settings["working_height"]
-    ideal_centers = get_ideal_swatch_centers(w_work, h_work)
-    # Ideal rect (canonical space)
-    rectangle = np.array([
-        [w_work, 0],
-        [w_work, h_work],
-        [0, h_work],
-        [0, 0]
-    ], dtype=np.float32)
-    
     
     fig, axes = plt.subplots(1, n_methods, figsize=(6 * n_methods, 6), squeeze=False)
     fig.suptitle(f"Detección de Batches de Color: {filename}", fontsize=16, weight='bold')
@@ -186,7 +184,6 @@ def visualize_comparison(
         else:
             detection = detections[0]
             
-            # 2. BBox Calculation
             if hasattr(detection, 'quadrilateral') and detection.quadrilateral is not None:
                 quad = detection.quadrilateral
                 x_coords = quad[:, 0]
@@ -197,37 +194,53 @@ def visualize_comparison(
                 width_bbox = max_x - min_x
                 height_bbox = max_y - min_y
                 
+                # 2. BBox Calculation
                 rect_calc = patches.Rectangle(
                     (min_x, min_y), width_bbox, height_bbox,
                     linewidth=3, edgecolor='#FF00FF', facecolor='none', linestyle='solid'
                 )
                 ax.add_patch(rect_calc)
                 
-                # 3. VISUALIZE SWATCHES (BATCHES)
-                # Compute Homography from Canonical Rectangle -> Detected Quad
-                # Note: getPerspectiveTransform finds H such that: dst = H * src
-                # We want map canonical points (src) -> image points (dst)
-                # So src=rectangle, dst=quad
+                # 3. VISUALIZE SWATCHES (DYNAMC TOPOLOGY CHECK)
                 try:
+                    # Determinar si el quad detectado es "Vertical" (Alto > Ancho en espacio de proyección)
+                    # Medimos longitudes de lados: Lado 0-1 (Top?), Lado 1-2 (Right?)
+                    # Orden usual de puntos en quad: TL, TR, BR, BL (o similar)
+                    p0, p1, p2, p3 = quad
+                    
+                    # Distancias
+                    d01 = np.linalg.norm(p1 - p0) # Primer lado (asumimos Height/Right?)
+                    d12 = np.linalg.norm(p2 - p1) # Segundo lado (asumimos Width/Bottom?)
+                    
+                    # CORRECCIÓN: La lógica anterior d12 > d01 detectaba Horizontal como Vertical.
+                    # Si asumimos orden TR, BR, BL, TL: d01=Height, d12=Width.
+                    # Vertical implica Height > Width => d01 > d12.
+                    # Horizontal implica Width > Height => d12 > d01.
+                    is_vertical_quad = d01 > d12
+                    
+                    # Generar centros ideales según topología detectada
+                    ideal_centers = get_dynamic_swatch_centers(w_work, h_work, is_vertical=is_vertical_quad)
+                    
+                    # Definir rectángulo canónico correspondiente
+                    # Si es vertical: (0,0) -> (w, h) PERO la grilla es 4x6
+                    rectangle = np.array([
+                        [w_work, 0],
+                        [w_work, h_work],
+                        [0, h_work],
+                        [0, 0]
+                    ], dtype=np.float32)
+
                     H = cv2.getPerspectiveTransform(rectangle, quad.astype(np.float32))
                     
-                    # Project ideal centers
-                    # points must be shaped (N, 1, 2) for perspectiveTransform
                     centers_reshaped = ideal_centers.reshape(-1, 1, 2)
                     projected_centers = cv2.perspectiveTransform(centers_reshaped, H)
-                    
                     projected_centers = projected_centers.reshape(-1, 2)
                     
-                    # Scatter plot swatches
-                    # Usamos scatter para mostrar los puntos de muestreo
                     ax.scatter(
                         projected_centers[:, 0], 
                         projected_centers[:, 1], 
                         c='yellow', s=10, marker='x', label='Swatches'
                     )
-                    
-                    # Optional: Verify if swatches are inside BBox implicitly
-                    # Visualmente se ve si caen dentro.
                     
                 except Exception as e:
                     LOGGER.warning("Error proyectando swatches: %s", e)
@@ -300,6 +313,7 @@ def run_benchmark(
             # --- MÉTODO 1: SEGMENTACIÓN ---
             LOGGER.info(">> Ejecutando SEGMENTACIÓN...")
             try:
+                # Solo Detección (Sin debug manual)
                 res_seg = detect_colour_checkers_segmentation(
                     img_processing, 
                     segmenter_kwargs=resolution_settings,
