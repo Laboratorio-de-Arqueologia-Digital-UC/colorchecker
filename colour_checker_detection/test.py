@@ -34,12 +34,6 @@ from colour_checker_detection import (
     detect_colour_checkers_segmentation,
     detect_colour_checkers_templated,
 )
-from colour_checker_detection.detection.segmentation import (
-    segmenter_default,
-)
-from colour_checker_detection.detection.templated import (
-    segmenter_templated,
-)
 from colour_checker_detection.detection.common import (
     SETTINGS_DETECTION_COLORCHECKER_CLASSIC,
 )
@@ -133,11 +127,10 @@ def visualize_comparison(
     image: NDArrayFloat,
     results_dict: dict[str, Any],
     bbox_cache_inference: list,
-    debug_info_dict: dict[str, Any], # Nuevo: Diccionario explícito de datos de debug
     filename: str
 ) -> None:
     """
-    Visualiza los resultados de múltiples métodos, incluyendo DEBUG de pasos intermedios.
+    Visualiza los resultados de múltiples métodos.
     """
     
     methods = list(results_dict.keys())
@@ -146,26 +139,23 @@ def visualize_comparison(
     if n_methods == 0:
         return
 
+    # Gamma correction para visualización y clipping
     img_display = np.clip(np.power(image, 1 / 2.2), 0, 1)
     
-    fig, axes = plt.subplots(2, n_methods, figsize=(6 * n_methods, 12), squeeze=False)
-    fig.suptitle(f"Comparación de Detección & DEBUG: {filename}", fontsize=16, weight='bold')
+    # 1 Fila, N Columnas (LIMPIO)
+    fig, axes = plt.subplots(1, n_methods, figsize=(6 * n_methods, 6), squeeze=False)
+    fig.suptitle(f"Comparación de Detección: {filename}", fontsize=16, weight='bold')
    
     for idx, method in enumerate(methods):
-        # === FILA 1: RESULTADO FINAL ===
         ax = axes[0, idx]
         ax.imshow(img_display)
-        ax.set_title(f"{method} - Resultado", fontsize=12)
+        ax.set_title(method, fontsize=12)
         ax.axis('off')
         
         # Inferencia BBox (Directo de YOLO)
         if method == "Inferencia" and bbox_cache_inference:
-            # Solo mostrar el de mayor confianza (ya filtrado previamente o mostramos el mejor)
-            # Como bbox_cache_inference es una lista global, asumimos que contiene los relevantes.
-            # Para mayor limpieza, si hay muchos, solo dibujamos el 1ro.
+            # Solo mostrar el de mayor confianza (que ya filtramos en run_benchmark)
             if len(bbox_cache_inference) > 0:
-                # Ordenar por no podemos (no tenemos conf aqui en la lista simple). 
-                # Asumimos que YOLO devuelve ordenados por conf.
                 best_bbox = bbox_cache_inference[0] 
                 x1, y1, x2, y2 = best_bbox
                 w_box, h_box = x2 - x1, y2 - y1
@@ -183,7 +173,7 @@ def visualize_comparison(
                     ha='center', transform=ax.transAxes, fontsize=12)
         else:
             # Dibujar BBox MAGENTA (Calculado) - Solo para el mejor candidato
-            detection = detections[0] # Asumimos el mejor es el primero
+            detection = detections[0]
             
             if hasattr(detection, 'quadrilateral') and detection.quadrilateral is not None:
                 quad = detection.quadrilateral
@@ -200,41 +190,6 @@ def visualize_comparison(
                     linewidth=3, edgecolor='#FF00FF', facecolor='none', linestyle='solid'
                 )
                 ax.add_patch(rect_calc)
-
-        # === FILA 2: DEBUG PROCESS (Image K + Raw Clusters) ===
-        ax_debug = axes[1, idx]
-        ax_debug.set_title(f"{method} - Procesamiento (Intermediate)", fontsize=10)
-        ax_debug.axis('off')
-        
-        # Recuperar datos de debug manuales
-        debug_data = debug_info_dict.get(method)
-        
-        if debug_data and hasattr(debug_data, 'image'): # 'image' es image_k en la dataclass de segmentación
-            img_debug_k = debug_data.image
-            ax_debug.imshow(img_debug_k, cmap='gray')
-            
-            # Dibujar Clusters
-            if hasattr(debug_data, 'clusters'):
-                for cluster in debug_data.clusters:
-                     if cluster is not None and len(cluster) > 0:
-                        poly_points = cluster.reshape(-1, 2)
-                        poly = patches.Polygon(
-                            poly_points,
-                            closed=True,
-                            linewidth=1,
-                            edgecolor='cyan',
-                            facecolor='none',
-                            alpha=0.6
-                        )
-                        ax_debug.add_patch(poly)
-            
-            n_clusters = len(debug_data.clusters) if debug_data.clusters is not None else 0
-            ax_debug.text(10, 10, f"Clusters: {n_clusters}", 
-                          color='white', backgroundcolor='black', fontsize=8)
-        else:
-             ax_debug.text(0.5, 0.5, "Sin datos intermedios", 
-                      ha='center', transform=ax_debug.transAxes, color='gray')
-
 
     plt.tight_layout()
     plt.show()
@@ -298,13 +253,12 @@ def run_benchmark(
             }
             
             results = {}
-            debug_info = {} # Guardar datos de segmentación crudos
             inference_bboxes = [] 
 
             # --- MÉTODO 1: SEGMENTACIÓN ---
             LOGGER.info(">> Ejecutando SEGMENTACIÓN...")
             try:
-                # A) Detección Completa
+                # Solo Detección (Sin debug manual)
                 res_seg = detect_colour_checkers_segmentation(
                     img_processing, 
                     segmenter_kwargs=resolution_settings,
@@ -314,20 +268,6 @@ def run_benchmark(
                 )
                 LOGGER.info("   Encontrados: %d", len(res_seg))
                 results["Segmentación"] = res_seg
-
-                # B) Debug: Llamada manual al Segmenter para obtener image_k
-                # Necesitamos llamar con los MISMOS parámetros
-                # Nota: segmenter_default requiere kwargs con settings mezclados
-                seg_settings = SETTINGS_DETECTION_COLORCHECKER_CLASSIC.copy()
-                seg_settings.update(resolution_settings) # Override working_width
-                
-                debug_seg_data = segmenter_default(
-                    img_processing,
-                    additional_data=True,
-                    **seg_settings
-                )
-                debug_info["Segmentación"] = debug_seg_data
-
             except Exception as e:
                 LOGGER.warning("   Fallo en segmentación: %s", e)
                 results["Segmentación"] = []
@@ -335,7 +275,6 @@ def run_benchmark(
             # --- MÉTODO 2: INFERENCIA (YOLO Wrappeado) ---
             LOGGER.info(">> Ejecutando INFERENCIA (YOLO Wrappeado)...")
             try:
-                # Limpiar cache antes de ejecutar
                 inference_bboxes.clear() 
                 
                 custom_inferencer = lambda img, **kwargs: adapter_yolo_inferencer(img, model, inference_bboxes)
@@ -350,18 +289,14 @@ def run_benchmark(
                 )
                 LOGGER.info("   Encontrados: %d", len(res_inf))
                 
-                # FILTRADO DE RESULTADOS: Quedarse solo con el mejor
+                # FILTRADO DE RESULTADOS: Top-1
                 if len(res_inf) > 1:
                      LOGGER.info("   Filtrando resultados de inferencia (quedando con el mejor)...")
-                     # Asumimos que el primero es el mejor o podríamos ordenar por área/confianza si la tuviéramos
-                     # En adapter_yolo_inferencer, YOLO devuelve ordenado por confianza usualmente.
                      res_inf = (res_inf[0],)
-                     # También filtrar bbox cache
                      if len(inference_bboxes) > 1:
                           inference_bboxes = [inference_bboxes[0]] # Keep top 1
                 
                 results["Inferencia"] = res_inf
-                # Inferencia no tiene "image_k" en el mismo sentido, debug_info vacío o custom máscaras
             except Exception as e:
                 LOGGER.warning("   Fallo en inferencia: %s", e)
                 results["Inferencia"] = []
@@ -378,24 +313,12 @@ def run_benchmark(
                 )
                 LOGGER.info("   Encontrados: %d", len(res_tpl))
                 results["Plantillas"] = res_tpl
-                
-                # B) Debug: Llamada manual a segmenter_templated
-                tpl_settings = SETTINGS_DETECTION_COLORCHECKER_CLASSIC.copy()
-                tpl_settings.update(resolution_settings)
-                
-                debug_tpl_data = segmenter_templated(
-                    img_processing,
-                    additional_data=True,
-                    **tpl_settings
-                )
-                debug_info["Plantillas"] = debug_tpl_data
-
             except Exception as e:
                 LOGGER.warning("   Fallo en plantillas: %s (Tipo: %s)", e, type(e).__name__)
                 results["Plantillas"] = []
 
-            # Visualizar comparación
-            visualize_comparison(img_processing, results, inference_bboxes, debug_info, img_path.name)
+            # Visualizar comparación (Limpia)
+            visualize_comparison(img_processing, results, inference_bboxes, img_path.name)
 
         except Exception:
             LOGGER.exception("Error procesando imagen %s", img_path.name)
