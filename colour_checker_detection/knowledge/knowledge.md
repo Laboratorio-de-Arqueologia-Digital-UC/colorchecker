@@ -363,14 +363,16 @@ Con estos ajustes, `sample_colour_checker` puede minimizar el error MSE incluso 
 
 ### Propósito
 Para iteraciones de debug más ágiles, se creó `colour_checker_detection/detection_swatches.py`. Este script:
--   **Procesa UNA sola imagen** (la primera `.CR2`/`.ARW` en `local_test/`).
--   **Usa SOLO el método Templated** (el más robusto para orientación).
--   **Genera un diagnóstico visual** en `test_results/[TIMESTAMP]/debug_detection.png`.
+-   **Procesamiento por Lote (Batch)**: Procesa todas las imágenes RAW encontradas en `local_test/`.
+-   **Soporte Multiformato**: Compatible con `.CR2` (Canon), `.ARW` (Sony) y `.RAF` (Fujifilm).
+-   **Usa SOLO el método Templated** (el más robusto para orientación automática).
+-   **Genera diagnósticos visuales** individuales en `test_results/[TIMESTAMP]/debug_[IMAGE_NAME].png`.
+-   **Visualización Interactiva**: Abre una ventana de inspección (`plt.show()`) por cada imagen, permitiendo validar los resultados en tiempo real antes de continuar con la siguiente.
 
 ### Flujo de Trabajo
 1.  **Lectura Dual**:
-    -   `sRGB` (gamma corregida, brillo ajustado) para detección visual.
-    -   `Linear` (gamma=1.0, 16-bit, Camera Raw Space) para extracción radiométrica.
+    -   `sRGB` (gamma corregida, brillo ajustado) para detección visual y optimización geométrica.
+    -   `Linear` (gamma=1.0, 16-bit, Camera Raw Space) para extracción radiométrica de alta precisión.
 2.  **Detección en sRGB**: Usa `detect_colour_checkers_templated`.
 3.  **Orientación Robusta**:
     -   Se llama a `sample_colour_checker` con la imagen sRGB y los `reference_values` para obtener el `quadrilateral` optimizado (MSE minimizado).
@@ -387,6 +389,11 @@ Las etiquetas numéricas (0-23) permiten verificar inmediatamente:
 -   **Índice 23** debe ser el más oscuro (**Negro**).
 
 Si los índices no coinciden con la posición física esperada, indica un problema de orientación en la detección o en la definición del rectángulo canónico.
+
+### Consistencia Geométrica (Crucial)
+Se descubrió que es imperativo mantener la coherencia entre el cuadrilátero usado para la **extracción** y el usado para la **visualización**:
+-   **Problema**: Si se grafican los índices usando el `quad_original` (bruto) pero se extraen los valores usando el `quad_optimized` (rotado lógicamente por MSE), los números en la imagen no corresponderán a los colores del gráfico lineal.
+-   **Solución**: Ambos procesos deben usar el mismo `quad_optimized`. La proyección visual debe usar la homografía derivada de este quad final para asegurar que el índice 0 graficado sobre el sRGB sea exactamente el mismo del que se extrajo el primer valor lineal.
 
 ### Extracción 16-Bit
 La lectura lineal usa `output_bps=16` y normalización `/65535.0` para maximizar la precisión en valores muy oscuros (las sombras en modo lineal sin gamma son cercanas a cero). Esto evita pérdida de información por cuantización de 8-bit.
