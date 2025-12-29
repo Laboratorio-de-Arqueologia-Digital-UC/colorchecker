@@ -293,13 +293,18 @@ def main():
                     LOGGER.warning("Visual projection failed: %s", e)
                 ax0.axis('off')
                 
-                # B: Parches Medidos (Lineal -> Gamma para ver)
+                # B: Parches Medidos (Lineal -> Gamma para ver) + Índices
                 ax1 = fig.add_subplot(gs[0, 1])
                 grid_meas = np.reshape(swatches_measured, (4, 6, 3))
-                # Normalización local para visualización
                 vis_meas = grid_meas / (np.max(grid_meas) if np.max(grid_meas) > 0 else 1)
                 ax1.imshow(np.power(np.clip(vis_meas, 0, 1), 1/2.2))
-                ax1.set_title("B: Medido (Camera Space)")
+                ax1.set_title("B: Medido (Índices)")
+                # Agregar números al Panel B
+                for i in range(24):
+                    r, c = divmod(i, 6)
+                    vis_lum = np.mean(np.power(vis_meas[r, c], 1/2.2))
+                    txt_col = 'white' if vis_lum < 0.5 else 'black'
+                    ax1.text(c, r, str(i), ha='center', va='center', color=txt_col, fontweight='bold', fontsize=10)
                 ax1.axis('off')
                 
                 # C: Parches Corregidos (AdobeRGB)
@@ -313,29 +318,31 @@ def main():
                 ax3 = fig.add_subplot(gs[1, 1])
                 grid_ref = np.reshape(swatches_ref_adobe, (4, 6, 3))
                 ax3.imshow(np.power(np.clip(grid_ref, 0, 1), 1/2.2))
-                ax3.set_title("D: Referencia (AdobeRGB)")
+                ax3.set_title("D: Referencia (Neutral)")
                 ax3.axis('off')
 
                 # E: Gráfico de Error Delta E
                 ax4 = fig.add_subplot(gs[1, 0])
                 ax4.bar(range(24), de00, color='teal')
                 ax4.axhline(avg_de, color='red', linestyle='--', label=f'Prom: {avg_de:.2f}')
-                ax4.set_title("E: Error Delta E 2000 por Parche")
-                ax4.set_xlabel("Índice de Parche")
+                ax4.set_title("E: Error Delta E 2000")
+                ax4.set_xlabel("Índice")
                 ax4.set_ylabel("Delta E")
                 ax4.legend()
                 
-                # F: Comparativa Directa (Split View)
+                # F: Imagen Aplicada (Full Corrected)
                 ax5 = fig.add_subplot(gs[1, 2])
-                split_view = np.zeros((4, 6, 3))
-                for i in range(24):
-                    r, c = divmod(i, 6)
-                    # Izquierda: Corregido, Derecha: Referencia
-                    # Pero en un grid 4x6 mostramos el corregido. 
-                    # Para simplificar, mostramos el corregido aquí y el título explica.
-                    split_view[r, c] = np.power(np.clip(swatches_corrected[i], 0, 1), 1/2.2)
-                ax5.imshow(split_view)
-                ax5.set_title("F: Resultado Final")
+                LOGGER.info(f"    [{method_name}] Generando vista previa de imagen corregida...")
+                img_corrected_full = colour.colour_correction(
+                    img_linear, 
+                    swatches_measured, 
+                    swatches_ref_adobe, 
+                    method='Cheung 2004'
+                )
+                # Gamma para visualización sRGB/AdobeRGB standard display
+                # Usamos una gamma simple 2.2 para el "vibe" rápido
+                ax5.imshow(np.power(np.clip(img_corrected_full, 0, 1), 1/2.2))
+                ax5.set_title("F: Imagen Corregida")
                 ax5.axis('off')
 
                 plt.tight_layout()

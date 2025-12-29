@@ -415,3 +415,48 @@ La lectura lineal usa `output_bps=16` y normalización `/65535.0` para maximizar
 | 23     | Black             | Negro (más oscuro)   |
 
 El orden sigue el patrón de lectura occidental (izquierda-derecha, arriba-abajo) cuando la carta está en orientación horizontal estándar (Logo X-Rite arriba).
+
+---
+
+## 17. Pipeline de Corrección de Color (CCM)
+
+### Objetivo
+Transformar los valores RGB crudos del sensor (**Camera Space**) hacia un espacio de color estándar con trazabilidad colorimétrica (**AdobeRGB Linear**).
+
+### Implementación (Cheung 2004)
+Se utiliza la función de alto nivel `colour.colour_correction`. A diferencia de un ajuste de niveles manual, esta función calcula una **Matriz de Corrección de Color (CCM)** de 3x3 (o superior) que minimiza el error de color entre los parches medidos y sus contrapartes teóricas.
+
+**Flujo de Datos:**
+1.  **Entrada**: Imagen RAW Lineal (16-bit).
+2.  **Referencia**: ColorChecker24 teórica proyectada a AdobeRGB/D65.
+3.  **Cálculo**: Resolución de mínimos cuadrados para encontrar la matriz que mapea `Medido -> Referencia`.
+4.  **Aplicación**: Multiplicación matricial sobre toda la imagen original.
+
+---
+
+## 18. Normalización de Referencias y Tonalidad Verde
+
+### Problema: El Tinte "Verdoso" en Referencias Nominales
+Se observó que al usar los valores nominales de la librería `colour` (e.g., BabelColor o X-Rite), el Panel de Referencia y el resultado corregido mostraban un tinte **verde/amarillento** en los parches neutros.
+- **Razón**: Los valores nominales de fábrica no siempre son perfectamente neutros ($R=G=B$) cuando se adaptan a D65. Una desviación de 0.005 en el canal verde es perceptible.
+
+### Solución: White Point Normalization
+Para garantizar una neutralidad perfecta en AdobeRGB, se implementó una normalización de escala por canal:
+1.  Tomar el **Parche Blanco (White 9.5)** de los datos de referencia en XYZ.
+2.  Calcular un factor de escala para cada canal (X, Y, Z) de modo que el blanco coincida exactamente con el punto blanco del iluminante destino (**D65**).
+3.  Aplicar este factor a todos los 24 parches.
+
+**Resultado**: Los grises son matemáticamente neutros en el espacio de destino, eliminando tintes subjetivos y asegurando un balance de blancos teórico perfecto.
+
+---
+
+## 19. Visualización Técnica de 6 Paneles
+
+Para una evaluación científica del color, se diseñó una visualización robusta que evita ambigüedades:
+
+1.  **Panel A (Detección)**: Imagen original con BBoxes e índices. Verifica que la geometría sea correcta.
+2.  **Panel B (Medido con Índices)**: Muestra los colores puros extraídos del sensor. **Incluir números (0-23)** es vital para correlacionar con el gráfico de error y detectar fallas de orientación.
+3.  **Panel C (Corregido)**: Vista de los parches tras aplicar la CCM. Debe ser visualmente muy similar a la Referencia.
+4.  **Panel D (Referencia)**: Valores teóricos normalizados. Sirve de "estándar de oro" visual.
+5.  **Panel E (Error Delta E 2000)**: Cuantificación objetiva del error. Un $\Delta E_{00} < 3$ es excelente; $> 5$ indica problemas de iluminación o detección.
+6.  **Panel F (Imagen Aplicada)**: Muestra la **escena completa corregida**. Vital para verificar que el perfil de color no introduce artefactos o clipeos indeseados en el resto del frame.

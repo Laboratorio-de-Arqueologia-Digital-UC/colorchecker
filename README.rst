@@ -1,149 +1,76 @@
-Colour - Checker Detection
-==========================
+Pipeline de Calibración de Color Automática
+==========================================
 
-.. start-badges
+Este repositorio contiene una implementación avanzada para la detección, extracción y corrección colorimétrica de cartas **ColorChecker** (específicamente optimizado para **ColorChecker Passport post-2014**) a partir de imágenes en formato **RAW**.
 
-|actions| |coveralls| |codacy| |version|
+.. image:: https://raw.githubusercontent.com/colour-science/colour-checker-detection/master/docs/_static/ColourCheckerDetection_001.png
+    :alt: Colour Checker Detection
+    :align: center
 
-.. |actions| image:: https://img.shields.io/github/actions/workflow/status/colour-science/colour-checker-detection/.github/workflows/continuous-integration-quality-unit-tests.yml?branch=develop&style=flat-square
-    :target: https://github.com/colour-science/colour-checker-detection/actions
-    :alt: Develop Build Status
-.. |coveralls| image:: http://img.shields.io/coveralls/colour-science/colour-checker-detection/develop.svg?style=flat-square
-    :target: https://coveralls.io/r/colour-science/colour-checker-detection
-    :alt: Coverage Status
-.. |codacy| image:: https://img.shields.io/codacy/grade/c543bc30229347cdaea00aadd3f79499/develop.svg?style=flat-square
-    :target: https://app.codacy.com/gh/colour-science/colour-checker-detection
-    :alt: Code Grade
-.. |version| image:: https://img.shields.io/pypi/v/colour-checker-detection.svg?style=flat-square
-    :target: https://pypi.org/project/colour-checker-detection
-    :alt: Package Version
+Descripción del Proyecto
+------------------------
 
-.. end-badges
+El objetivo principal es proporcionar un flujo de trabajo (pipeline) científico que garantice la trazabilidad del color desde el sensor de la cámara hasta un espacio de color estándar (**AdobeRGB Linear**) con iluminante **D65**. El sistema automatiza la localización de la carta, la orientación de los parches y el cálculo de la **Matriz de Corrección de Color (CCM)**.
 
-A `Python <https://www.python.org>`__ package implementing various colour
-checker detection algorithms and related utilities.
+Características Principales
+---------------------------
 
-It is open source and freely available under the
-`BSD-3-Clause <https://opensource.org/licenses/BSD-3-Clause>`__ terms.
+*   **Detección Híbrida**: Combina algoritmos de segmentación clásica (OpenCV) y matching por plantillas para máxima robustez en diferentes condiciones de iluminación.
+*   **Extracción de 16-bits (Camera Space)**: Lectura directa de datos radiométricos lineales usando ``rawpy``, evitando procesamientos gamma intermedios.
+*   **Corrección CCM (Cheung 2004)**: Cálculo de matrices de transformación colorimétrica precisas utilizando la librería ``colour-science``.
+*   **Normalización de Punto Blanco**: Algoritmo propio para asegurar que las referencias y el resultado final sean perfectamente neutros (R=G=B) en parches grises, eliminando tintes verdosos.
+*   **Visualización Técnica de 6 Paneles**: Generación automática de reportes visuales para inspección de calidad.
 
-..  image:: https://raw.githubusercontent.com/colour-science/colour-checker-detection/master/docs/_static/ColourCheckerDetection_001.png
+Dependencias
+------------
 
-.. contents:: **Table of Contents**
-    :backlinks: none
-    :depth: 2
+El proyecto utiliza ``uv`` como gestor de entorno para garantizar reproducibilidad:
 
-.. sectnum::
+*   **Fundamentales**: ``python >= 3.10``, ``colour-science >= 0.4.3``, ``rawpy``, ``opencv-python``.
+*   **Análisis**: ``numpy``, ``scikit-learn`` (para detección por plantillas), ``matplotlib``.
 
-Features
---------
+Instalación y Uso
+-----------------
 
-The following colour checker detection algorithms are implemented:
+Sincronización del entorno::
 
--   Segmentation
--   Templated
--   Machine learning inference via `Ultralytics YOLOv8 <https://github.com/ultralytics/ultralytics>`__
+    uv sync
 
-    -   The model is published on `HuggingFace <https://huggingface.co/colour-science/colour-checker-detection-models>`__,
-        and was trained on a purposely constructed `dataset <https://huggingface.co/datasets/colour-science/colour-checker-detection-dataset>`__.
-    -   The model has only been trained on *ColorChecker Classic 24* images and
-        will not work with *ColorChecker Nano* or *ColorChecker SG* images.
-    -   Inference is performed by a script licensed under the terms of the
-        *GNU Affero General Public License v3.0* as it uses the
-        *Ultralytics YOLOv8* API which is incompatible with the
-        *BSD-3-Clause*.
+Ejecución del pipeline de calibración::
 
-Examples
-^^^^^^^^
+    uv run python colour_checker_detection/correction_swatches.py
 
-Various usage examples are available from the
-`examples directory <https://github.com/colour-science/colour-checker-detection/tree/master/colour_checker_detection/examples>`__.
+Scripts Principales
+-------------------
 
-User Guide
-----------
+1.  **correction_swatches.py**: El orquestador principal. Realiza detección, extracción lineal, cálculo de CCM, normalización y visualización.
+2.  **detection_swatches.py**: Versión centrada en la validación geométrica y extracción batch de múltiples formatos RAW (.CR2, .ARW, .RAF).
+3.  **test.py**: Herramienta de benchmark para evaluar la precisión de los modelos de detección.
 
-Installation
-^^^^^^^^^^^^
+Funciones Críticas
+------------------
 
-Because of their size, the resources dependencies needed to run the various
-examples and unit tests are not provided within the Pypi package. They are
-separately available as
-`Git Submodules <https://git-scm.com/book/en/v2/Git-Tools-Submodules>`__
-when cloning the
-`repository <https://github.com/colour-science/colour-checker-detection>`__.
+*   ``detect_colour_checkers_segmentation`` / ``templated``: Funciones de detección que operan en resolución nativa para mantener precisión 1:1.
+*   ``sample_colour_checker``: Extrae los valores RGB y optimiza la orientación (rotación 0, 90, 180, 270) basándose en el error MSE contra la referencia.
+*   ``colour.colour_correction``: Implementa la transformación lineal de mínimos cuadrados para generar la imagen corregida.
+*   ``White Point Normalization (Internal)``: Escala los valores XYZ de referencia para alinearlos exactamente con el iluminante D65.
 
-Primary Dependencies
-~~~~~~~~~~~~~~~~~~~~
+Salidas Esperadas (Outputs)
+---------------------------
 
-**Colour - Checker Detection** requires various dependencies in order to run:
+El proyecto genera resultados en la carpeta ``test_results/[TIMESTAMP]/``:
 
-- `python >= 3.10, < 3.14 <https://www.python.org/download/releases>`__
-- `colour-science >= 4.5 <https://pypi.org/project/colour-science>`__
-- `imageio >= 2, < 3 <https://imageio.github.io>`__
-- `numpy >= 1.24, < 3 <https://pypi.org/project/numpy>`__
-- `opencv-python >= 4, < 5 <https://pypi.org/project/opencv-python>`__
-- `scipy >= 1.10, < 2 <https://pypi.org/project/scipy>`__
+*   **Reporte Visual (PNG)**: Imagen técnica de 6 paneles:
+    *   **Panel A**: Detección original con índices y BBox.
+    *   **Panel B**: Parches medidos (Camera Space) con índices 0-23.
+    *   **Panel C**: Parches corregidos en AdobeRGB.
+    *   **Panel D**: Referencias teóricas neutralizadas.
+    *   **Panel E**: Gráfico de error Delta E 2000.
+    *   **Panel F**: Previsualización de la imagen completa corregida.
+*   **Métricas**: Logs detallados con Delta E 2000 promedio y máximo (Objetivo: ΔE < 3).
 
-Secondary Dependencies
-~~~~~~~~~~~~~~~~~~~~~~
+---
 
-- `click >= 8, < 9 <https://pypi.org/project/click>`__
-- `ultralytics >= 8, < 9 <https://pypi.org/project/ultralytics>`__
-
-Pypi
-~~~~
-
-Once the dependencies are satisfied, **Colour - Checker Detection** can be installed from
-the `Python Package Index <http://pypi.python.org/pypi/colour-checker-detection>`__ by
-issuing this command in a shell::
-
-    pip install --user colour-checker-detection
-
-The overall development dependencies are installed as follows::
-
-    pip install --user 'colour-checker-detection[development]'
-
-Contributing
-^^^^^^^^^^^^
-
-If you would like to contribute to `Colour - Checker Detection <https://github.com/colour-science/colour-checker-detection>`__,
-please refer to the following `Contributing <https://www.colour-science.org/contributing>`__
-guide for `Colour <https://github.com/colour-science/colour>`__.
-
-Bibliography
-^^^^^^^^^^^^
-
-The bibliography is available in the repository in
-`BibTeX <https://github.com/colour-science/colour-checker-detection/blob/develop/BIBLIOGRAPHY.bib>`__
-format.
-
-API Reference
--------------
-
-The main technical reference `Colour - Checker Detection <https://github.com/colour-science/colour-checker-detection>`__
-is the `API Reference <https://colour-checker-detection.readthedocs.io/en/latest/reference.html>`__.
-
-Code of Conduct
----------------
-
-The *Code of Conduct*, adapted from the `Contributor Covenant 1.4 <https://www.contributor-covenant.org/version/1/4/code-of-conduct.html>`__,
-is available on the `Code of Conduct <https://www.colour-science.org/code-of-conduct>`__ page.
-
-Contact & Social
-----------------
-
-The *Colour Developers* can be reached via different means:
-
-- `Email <mailto:colour-developers@colour-science.org>`__
-- `Facebook <https://www.facebook.com/python.colour.science>`__
-- `Github Discussions <https://github.com/colour-science/colour-checker-detection/discussions>`__
-- `Gitter <https://gitter.im/colour-science/colour>`__
-- `X <https://x.com/colour_science>`__
-- `Bluesky <https://bsky.app/profile/colour-science.bsky.social>`__
-
-About
------
-
-| **Colour - Checker Detection** by Colour Developers
-| Copyright 2018 Colour Developers – `colour-developers@colour-science.org <colour-developers@colour-science.org>`__
-| This software is released under terms of BSD-3-Clause: https://opensource.org/licenses/BSD-3-Clause
-| `https://github.com/colour-science/colour-checker-detection <https://github.com/colour-science/colour-checker-detection>`__
+| **Desarrollo Centrado en Precisión Colorimétrica**
+| Implementado para el Laboratorio de Arqueología Digital UC.
+| Basado en el ecosistema `Colour Science <https://www.colour-science.org/>`__.
