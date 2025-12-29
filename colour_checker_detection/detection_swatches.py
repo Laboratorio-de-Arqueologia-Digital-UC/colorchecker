@@ -9,6 +9,7 @@ from datetime import datetime
 
 # Importaciones de la librería
 from colour_checker_detection.detection import (
+    detect_colour_checkers_segmentation,
     detect_colour_checkers_templated,
     SETTINGS_DETECTION_COLORCHECKER_CLASSIC
 )
@@ -119,131 +120,139 @@ def main():
         settings["working_width"] = w
         settings["working_height"] = h
         
-        # 3. Detección (SOLO PLANTILLAS)
-        LOGGER.info("Ejecutando Detección por Plantillas...")
-        start_t = time.perf_counter()
-        detections = detect_colour_checkers_templated(img_srgb, additional_data=True, **settings)
-        elapsed = time.perf_counter() - start_t
-        LOGGER.info("Detección terminada en %.2fs. Encontrados: %d", elapsed, len(detections))
+        # 3. Detección Multi-Método
+        methods_to_try = {
+            "Plantillas": detect_colour_checkers_templated,
+            "Segmentación": detect_colour_checkers_segmentation
+        }
         
-        if not detections:
-            LOGGER.warning("No se detectó nada en %s. Saltando.", img_path.name)
+        all_detections = {}
+        for name, detection_func in methods_to_try.items():
+            LOGGER.info(f"Ejecutando Detección por {name.upper()}...")
+            try:
+                # La segmentación en el repo suele usar segmenter_kwargs y extractor_kwargs
+                det_res = detection_func(
+                    img_srgb, 
+                    additional_data=True, 
+                    segmenter_kwargs=settings,
+                    extractor_kwargs=settings,
+                    **settings
+                )
+                if det_res:
+                    all_detections[name] = det_res[0]
+                    LOGGER.info(f"   {name}: Detectado con éxito.")
+                else:
+                    LOGGER.warning(f"   {name}: No se encontró nada.")
+            except Exception as e:
+                LOGGER.warning(f"   {name}: Error -> {e}")
+
+        if not all_detections:
+            LOGGER.warning("No se detectó nada por ningún método en %s. Saltando.", img_path.name)
             continue
 
-        det = detections[0]
-        
-        # 4. Extracción Lineal (Repo Logic)
-        LOGGER.info("Iniciando Extracción Lineal...")
-        img_linear = read_raw_high_res(img_path, linear=True)
-        if is_vertical:
-            img_linear = cv2.rotate(img_linear, cv2.ROTATE_90_CLOCKWISE)
-            
-        # --- HERE IS THE FIX LOGIC ---
-        # a) Usar sRGB para encontrar orientación óptima usando sample_colour_checker del repo
-        srgb_refs = CONF_CLASSIC.get("reference_values")
-        
-        # Rectangulo canonico para sampleo
+        # Rectangulo canonico para sampleo (moved here as it's used by all methods)
         rect_canon = np.array([
             [0, 0], [w, 0], [w, h], [0, h]
         ], dtype=np.float32)
 
-        # Llamada de "Calibración de Orientación"
-        LOGGER.info("Optimizando Orientación usando imagen sRGB...")
-        visual_data = sample_colour_checker(
-            img_srgb, 
-            det.quadrilateral, 
-            rect_canon, 
-            samples=32, 
-            **settings
-        )
+        # Initialize linear_data to None, in case no method yields it
+        linear_data = None 
+
+        # 4. Procesamiento por cada método detectado
+        for method_name, det in all_detections.items():
+            LOGGER.info(f"Procesando Extracción para: {method_name}")
+            
+            # Iniciando Extracción Lineal
+            img_linear = read_raw_high_res(img_path, linear=True)
+            if is_vertical:
+                img_linear = cv2.rotate(img_linear, cv2.ROTATE_90_CLOCKWISE)
+                
+            # a) Optimizar Orientación en sRGB (Coherente con test.py)
+            LOGGER.info(f"  [{method_name}] Optimizando Orientación...")
+            visual_data = sample_colour_checker(
+                img_srgb, 
+                det.quadrilateral, 
+                rect_canon, 
+                samples=32, 
+                **settings
+            )
+            
+            quad_optimized = visual_data.quadrilateral
+            
+            # b) Extraer Linear usando ese Quad FIX
+            linear_settings = settings.copy()
+            linear_settings["reference_values"] = None 
+            
+            linear_data = sample_colour_checker(
+                img_linear,
+                quad_optimized,
+                rect_canon,
+                samples=32,
+                **linear_settings
+            )
         
-        quad_optimized = visual_data.quadrilateral
-        LOGGER.info("Orientación Optimizada obtenida.")
-        
-        # b) Extraer Linear usando ese Quad FIX (sin re-rotar)
-        linear_settings = settings.copy()
-        linear_settings["reference_values"] = None # DISABLE internal auto-rot
-        
-        linear_data = sample_colour_checker(
-            img_linear,
-            quad_optimized,
-            rect_canon,
-            samples=32,
-            **linear_settings
-        )
-        
-        # 5. Visualización Rápida
-        if linear_data:
-            vals = linear_data.swatch_colours
-            
-            # Validar Orientación por Brillo
-            means = np.mean(vals, axis=1)
-            brightest_idx = np.argmax(means)
-            LOGGER.info("  B-Idx: %d, White: %s, Black: %s", 
-                        brightest_idx, np.round(vals[18], 4), np.round(vals[23], 4))
-            
-            # Plot
-            fig, ax = plt.subplots(1, 2, figsize=(14, 7))
-            ax[0].imshow(np.clip(img_srgb, 0, 1))
-            ax[0].set_title(f"A: {img_path.name} (sRGB)")
-            
-            # Dibujar Quad
-            poly = quad_optimized.astype(int)
-            poly = np.vstack([poly, poly[0]]) # Cerrar
-            ax[0].plot(poly[:,0], poly[:,1], 'r-', linewidth=2)
-            
-            # --- VISUALIZATION LOGIC (Uses Optimized Quad) ---
-            try:
-                # Project swatch centers using the OPTIMIZED quad (same as extraction)
-                # Standard rectangle (TL, TR, BR, BL) - matches sample_colour_checker internal
-                rect_std = np.array([
-                    [0, 0], [w, 0], [w, h], [0, h]
-                ], dtype=np.float32)
+            # 5. Visualización Rápida (INSIDE method loop)
+            if linear_data:
+                vals = linear_data.swatch_colours
                 
-                # Compute ideal centers in rectified space (row-major: 4 rows x 6 cols)
-                from colour_checker_detection.detection.common import swatch_masks
-                masks = swatch_masks(w, h, 6, 4, samples=32)
-                rect_centers = []
-                for mask in masks:
-                    cy = (mask[0] + mask[1]) / 2.0
-                    cx = (mask[2] + mask[3]) / 2.0
-                    rect_centers.append([cx, cy])
-                rect_centers = np.array(rect_centers, dtype=np.float32).reshape(-1, 1, 2)
+                # Validar Orientación por Brillo
+                means = np.mean(vals, axis=1)
+                brightest_idx = np.argmax(means)
+                LOGGER.info(f"    [{method_name}] B-Idx: {brightest_idx}, White: {np.round(vals[18], 4)}")
                 
-                # H: Rect -> Optimized Quad (in original image space)
-                H_vis = cv2.getPerspectiveTransform(rect_std, quad_optimized.astype(np.float32))
-                proj_centers = cv2.perspectiveTransform(rect_centers, H_vis).reshape(-1, 2)
+                # Plot
+                fig, ax = plt.subplots(1, 2, figsize=(14, 7))
+                ax[0].imshow(np.clip(img_srgb, 0, 1))
+                ax[0].set_title(f"A: {img_path.name} ({method_name})")
                 
-                ax[0].scatter(proj_centers[:, 0], proj_centers[:, 1], c='yellow', s=20, marker='x', label='Swatch Centers')
-                for idx, (px, py) in enumerate(proj_centers):
-                    ax[0].text(px, py, str(idx), color='cyan', fontsize=8, fontweight='bold', ha='right', va='bottom')
-                ax[0].legend()
+                # Dibujar Quad
+                poly = quad_optimized.astype(int)
+                poly = np.vstack([poly, poly[0]]) # Cerrar
+                ax[0].plot(poly[:,0], poly[:,1], 'r-', linewidth=2)
                 
-            except Exception as e:
-                LOGGER.warning("Visual projection failed: %s", e)
-            
-            # Swatches Preview (Gamma corrected for view)
-            swatch_grid = np.zeros((4, 6, 3))
-            for i in range(24):
-                r, c = divmod(i, 6)
-                color_vis = np.power(np.clip(vals[i], 0, 1), 1/2.2) 
-                color_vis /= np.max(color_vis) if np.max(color_vis) > 0 else 1
-                swatch_grid[r, c] = color_vis
+                # --- VISUALIZATION LOGIC (Uses Optimized Quad) ---
+                try:
+                    rect_std = np.array([[0, 0], [w, 0], [w, h], [0, h]], dtype=np.float32)
+                    from colour_checker_detection.detection.common import swatch_masks
+                    masks = swatch_masks(w, h, 6, 4, samples=32)
+                    rect_centers = []
+                    for mask in masks:
+                        cy = (mask[0] + mask[1]) / 2.0
+                        cx = (mask[2] + mask[3]) / 2.0
+                        rect_centers.append([cx, cy])
+                    rect_centers = np.array(rect_centers, dtype=np.float32).reshape(-1, 1, 2)
+                    H_vis = cv2.getPerspectiveTransform(rect_std, quad_optimized.astype(np.float32))
+                    proj_centers = cv2.perspectiveTransform(rect_centers, H_vis).reshape(-1, 2)
+                    
+                    ax[0].scatter(proj_centers[:, 0], proj_centers[:, 1], c='yellow', s=20, marker='x')
+                    for idx, (px, py) in enumerate(proj_centers):
+                        ax[0].text(px, py, str(idx), color='cyan', fontsize=8, fontweight='bold', ha='right', va='bottom')
+                except Exception as e:
+                    LOGGER.warning("Visual projection failed: %s", e)
                 
-                vis_lum = np.mean(color_vis)
-                txt_col = 'black' if vis_lum > 0.5 else 'white'
-                ax[1].text(c, r, str(i), ha='center', va='center', fontsize=12, color=txt_col, fontweight='bold')
+                # Swatches Preview (Gamma corrected for view)
+                swatch_grid = np.zeros((4, 6, 3))
+                for i in range(24):
+                    r, c = divmod(i, 6)
+                    color_vis = np.power(np.clip(vals[i], 0, 1), 1/2.2) 
+                    color_vis /= np.max(color_vis) if np.max(color_vis) > 0 else 1
+                    swatch_grid[r, c] = color_vis
+                    
+                    vis_lum = np.mean(color_vis)
+                    txt_col = 'black' if vis_lum > 0.5 else 'white'
+                    ax[1].text(c, r, str(i), ha='center', va='center', fontsize=12, color=txt_col, fontweight='bold')
+                    
+                ax[1].imshow(swatch_grid)
+                ax[1].set_title(f"B: Extracción Lineal ({method_name})")
                 
-            ax[1].imshow(swatch_grid)
-            ax[1].set_title(f"B: Extracción Lineal (Index labels)")
-            
-            out_path = output_dir / f"debug_{img_path.stem}.png"
-            plt.savefig(out_path, bbox_inches='tight')
-            LOGGER.info("Resultado guardado en: %s", out_path)
-            
-            # Mostrar interactivo antes de cerrar
-            plt.show()
-            plt.close(fig) 
+                # Guardar con prefijo de método
+                out_path = output_dir / f"debug_{method_name}_{img_path.stem}.png"
+                plt.savefig(out_path, bbox_inches='tight')
+                LOGGER.info("Resultado guardado en: %s", out_path)
+                
+                # Mostrar interactivo antes de cerrar
+                plt.show()
+                plt.close(fig) 
 
 
 if __name__ == "__main__":

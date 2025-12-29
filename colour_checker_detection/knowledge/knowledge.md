@@ -365,19 +365,19 @@ Con estos ajustes, `sample_colour_checker` puede minimizar el error MSE incluso 
 Para iteraciones de debug más ágiles, se creó `colour_checker_detection/detection_swatches.py`. Este script:
 -   **Procesamiento por Lote (Batch)**: Procesa todas las imágenes RAW encontradas en `local_test/`.
 -   **Soporte Multiformato**: Compatible con `.CR2` (Canon), `.ARW` (Sony) y `.RAF` (Fujifilm).
--   **Usa SOLO el método Templated** (el más robusto para orientación automática).
--   **Genera diagnósticos visuales** individuales en `test_results/[TIMESTAMP]/debug_[IMAGE_NAME].png`.
--   **Visualización Interactiva**: Abre una ventana de inspección (`plt.show()`) por cada imagen, permitiendo validar los resultados en tiempo real antes de continuar con la siguiente.
+-   **Detección Multi-Método**:
+    -   **Plantillas (Templated)**: Robusto para orientación.
+    -   **Segmentación (Classic CV)**: Útil cuando no hay una malla de referencia clara o hay distorsiones.
+-   **Genera diagnósticos visuales** individuales con prefijo de método en `test_results/[TIMESTAMP]/debug_[METHOD]_[IMAGE_NAME].png`.
+-   **Visualización Interactiva**: Abre una ventana de inspección (`plt.show()`) por cada método y por cada imagen.
 
 ### Flujo de Trabajo
 1.  **Lectura Dual**:
     -   `sRGB` (gamma corregida, brillo ajustado) para detección visual y optimización geométrica.
     -   `Linear` (gamma=1.0, 16-bit, Camera Raw Space) para extracción radiométrica de alta precisión.
-2.  **Detección en sRGB**: Usa `detect_colour_checkers_templated`.
-3.  **Orientación Robusta**:
-    -   Se llama a `sample_colour_checker` con la imagen sRGB y los `reference_values` para obtener el `quadrilateral` optimizado (MSE minimizado).
-4.  **Extracción en Linear**:
-    -   Se llama a `sample_colour_checker` con la imagen Linear y `reference_values=None` (desactivando re-rotación interna), usando el quad ya optimizado del paso anterior.
+2.  **Detección Paralela**: Ejecuta ambos métodos y almacena cada éxito de forma independiente.
+3.  **Orientación Robusta**: Para cada detección exitosa, se llama a `sample_colour_checker` en sRGB para minimizar MSE y encontrar la rotación lógica.
+4.  **Extracción en Linear**: Usa el quad optimizado del paso anterior para muestrear los 24 swatches sin re-orientar (trusting visual sync).
 5.  **Visualización**:
     -   **Panel Izquierdo**: Imagen sRGB con quad dibujado y **índices de swatch (0-23)** proyectados.
     -   **Panel Derecho**: Cuadrícula 4x6 reconstruida con valores lineales (gamma-corregidos para visualización) y etiquetas de índice.
