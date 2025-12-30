@@ -1,14 +1,14 @@
 [project]
-name = "colour-checker-detection"
+name = "colorchecker-pipeline"
 version = "0.2.3"
-description = "Colour checker detection with Python"
+description = "Pipeline de detección y corrección de color para fotogrametría (Derivado de colour-checker-detection)"
 readme = "README.rst"
 requires-python = ">=3.11,<3.15"
 authors = [
     { name = "Colour Developers", email = "colour-developers@colour-science.org" },
 ]
 maintainers = [
-    { name = "Colour Developers", email = "colour-developers@colour-science.org" }
+    { name = "Laboratorio de Arqueología Digital UC" }
 ]
 license = { text = "BSD-3-Clause" }
 keywords = [
