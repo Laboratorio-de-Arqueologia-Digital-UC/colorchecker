@@ -29,6 +29,14 @@ from colour.hints import NDArrayFloat, cast
 from colour.utilities import as_float_array
 
 from colour_checker_detection.detection.common import as_int32_array
+
+__author__ = "Laboratorio de Arqueología Digital UC"
+__copyright__ = "Copyright 2018 Laboratorio de Arqueología Digital UC"
+__license__ = "Apache-2.0 - https://opensource.org/licenses/Apache-2.0"
+__maintainer__ = "Laboratorio de Arqueología Digital UC"
+__email__ = "victor.mendez@uc.cl"
+__status__ = "Development"
+
 from colour_checker_detection import (
     detect_colour_checkers_inference,
     detect_colour_checkers_segmentation,

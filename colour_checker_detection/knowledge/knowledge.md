@@ -460,3 +460,56 @@ Para una evaluación científica del color, se diseñó una visualización robus
 4.  **Panel D (Referencia)**: Valores teóricos normalizados. Sirve de "estándar de oro" visual.
 5.  **Panel E (Error Delta E 2000)**: Cuantificación objetiva del error. Un $\Delta E_{00} < 3$ es excelente; $> 5$ indica problemas de iluminación o detección.
 6.  **Panel F (Imagen Aplicada)**: Muestra la **escena completa corregida**. Vital para verificar que el perfil de color no introduce artefactos o clipeos indeseados en el resto del frame.
+
+---
+
+## 20. Identidad del Proyecto y Licenciamiento
+
+### Cambio de Identidad
+El proyecto ha evolucionado de `colour-checker-detection` (upstream) a **`colorchecker-pipeline`** bajo la administración del **Laboratorio de Arqueología Digital UC**.
+-   **Repositorio**: github.com/Laboratorio-de-Arqueologia-Digital-UC/colorchecker
+-   **Licencia**: Apache 2.0 (para el trabajo derivado y nuevos scripts).
+-   **Licencia Base**: Se respeta BSD-3-Clause para el código original (`colour_checker_detection/`).
+
+### Gestión de Dependencias (`uv`)
+El proyecto ha adoptado **`uv`** como estándar moderno para gestión de paquetes y entornos.
+-   Reemplaza a `pip` y `virtualenv` tradicionales.
+-   Permite ejecución determinista con `uv run script.py`.
+-   Simplifica la gestión de dependencias complejas como `opencv` y `ultralytics`.
+
+---
+
+## 21. Metodología de Benchmark (Comparativa Estadística)
+
+### Estructura del Reporte
+El script `correction_swatches_benchmark.py` genera cuatro tablas de análisis para comparar objetivamente los métodos de detección **Segmentation** vs **Templated**:
+
+1.  **Valores RGB (Precisión)**:
+    -   Lista cada parche detectado con su valor RGB Lineal.
+    -   Calcula el error $\Delta E_{2000}$ comparando el color extraído (y corregido teóricamente) contra la referencia D65.
+    -   Permite identificar si un método introduce desviación cromática sistemática.
+
+2.  **Tiempo de Ejecución**:
+    -   Mide el costo computacional (segundos) de cada algoritmo por imagen.
+
+3.  **Comparación por Imagen (Drift & Diff)**:
+    -   **Drift (Deriva Geométrica)**: Distancia euclidiana media (en píxeles) entre los centroides detectados por ambos métodos. $> 5px$ sugiere discrepancia espacial significativa.
+    -   **Mean Color Diff**: Diferencia cromática promedio entre los resultados de ambos métodos.
+
+### Muestreo de Píxeles
+Se estandarizó el muestreo a **32x32 muestras** (1024 píxeles) por parche para asegurar robustez estadística frente al ruido del sensor en imágenes RAW.
+
+---
+
+## 22. Significancia Estadística (Paired T-Test)
+
+### Implementación
+Se utiliza una **Prueba T Pareada (Paired T-Test)** sobre los valores RGB aplanados obtenidos por ambos métodos en el mismo conjunto de imágenes.
+
+### Interpretación de Resultados
+| Resultado | Interpretación |
+| :--- | :--- |
+| **p < 0.05** | **Diferencia Significativa**. Los métodos producen resultados distintos estocásticamente. Se debe preferir el que tenga menor error ($\Delta E$) en la tabla "Valores RGB". |
+| **p >= 0.05** | **Equivalencia Estadística**. No hay evidencia suficiente para distinguir los métodos. Se recomienda usar el más rápido (ver tabla "Tiempo"). |
+
+Esta prueba valida si optimizaciones sutiles (ej. ajuste de quad) tienen impacto real o son despreciables frente al ruido del sensor.

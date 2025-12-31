@@ -2,6 +2,13 @@
 import numpy as np
 from scipy.spatial import distance as dist
 
+__author__ = "Laboratorio de Arqueología Digital UC"
+__copyright__ = "Copyright 2018 Laboratorio de Arqueología Digital UC"
+__license__ = "Apache-2.0 - https://opensource.org/licenses/Apache-2.0"
+__maintainer__ = "Laboratorio de Arqueología Digital UC"
+__email__ = "victor.mendez@uc.cl"
+__status__ = "Development"
+
 def order_points(pts):
     """
     Ordena las coordenadas del cuadrilátero: TL, TR, BR, BL.

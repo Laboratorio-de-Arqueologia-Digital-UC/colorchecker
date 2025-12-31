@@ -32,12 +32,12 @@ from colour.characterisation import CCS_COLOURCHECKERS
 from colour.models import RGB_COLOURSPACES
 from colour.difference import delta_E
 
-__author__ = "Colour Developers"
-__copyright__ = "Copyright 2018 Colour Developers"
+__author__ = "Laboratorio de Arqueología Digital UC"
+__copyright__ = "Copyright 2018 Laboratorio de Arqueología Digital UC"
 __license__ = "Apache-2.0 - https://opensource.org/licenses/Apache-2.0"
-__maintainer__ = "Colour Developers"
-__email__ = "colour-developers@colour-science.org"
-__status__ = "Production"
+__maintainer__ = "Laboratorio de Arqueología Digital UC"
+__email__ = "victor.mendez@uc.cl"
+__status__ = "Development"
 
 __all__ = [
     "main"

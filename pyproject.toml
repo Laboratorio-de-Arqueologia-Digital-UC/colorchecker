@@ -5,28 +5,16 @@ description = "Pipeline de detección y corrección de color para fotogrametría
 readme = "README.rst"
 requires-python = ">=3.11,<3.15"
 authors = [
-    { name = "Colour Developers", email = "colour-developers@colour-science.org" },
+    { name = "Laboratorio de Arqueología Digital UC", email = "victor.mendez@uc.cl" },
 ]
 maintainers = [
     { name = "Laboratorio de Arqueología Digital UC" }
 ]
-license = { text = "BSD-3-Clause" }
+license = { text = "APACHE-2.0" }
 keywords = [
-    "color",
-    "color-science",
-    "colour",
     "colour-science",
     "color-checker",
     "colour-checker",
-    "segmentation",
-    "color-space",
-    "color-spaces",
-    "colorspace",
-    "colorspaces",
-    "colour-space",
-    "colour-spaces",
-    "colourspace",
-    "colourspaces",
     "python"
 ]
 classifiers = [
@@ -77,21 +65,21 @@ sklearn = [
 ]
 
 [project.urls]
-Homepage = "https://www.colour-science.org"
-Documentation = "https://colour-checker-detection.readthedocs.org"
-Repository = "https://github.com/colour-science/colour-checker-detection"
-Issues = "https://github.com/colour-science/colour-checker-detection/issues"
-Changelog = "https://github.com/colour-science/colour-checker-detection/releases"
+Homepage = ""
+Documentation = ""
+Repository = "https://github.com/Laboratorio-de-Arqueologia-Digital-UC/colorchecker"
+Issues = ""
+Changelog = ""
 
 [tool.uv]
 package = true
 
 [tool.uv.sources]
-colour-checker-detection = { workspace = true }
+colorchecker-pipeline = { workspace = true }
 
 [dependency-groups]
 dev = [
-    "colour-checker-detection",
+    "colorchecker-pipeline",
     "coverage",
     "coveralls",
     "hatch",

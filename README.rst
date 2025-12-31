@@ -74,6 +74,19 @@ El repositorio incluye herramientas para diferentes etapas del procesado, desde 
 
             uv run python colour_checker_detection/scripts/inference.py --input imagen.jpg --show
 
+5.  **colour_checker_detection/correction_swatches_benchmark.py**
+    *   **Función**: Herramienta de evaluación estadística. Compara científicamente los métodos de detección **Segmentation** vs **Templated**.
+    *   **Métricas y Tablas Generadas**:
+        *   **Valores RGB**: Reporte detallado de valores RGB lineales extraídos por cada método y su precisión ($\Delta E_{2000}$) respecto a la referencia teórica (D65).
+        *   **Tiempo (Time)**: Comparativa de tiempos de ejecución por imagen.
+        *   **Comparación por Imagen**: Resumen de **Deriva Geométrica** (distancia en píxeles entre centros detectados) y **Diferencia de Color Promedio** entre métodos.
+        *   **Significancia Estadística (Paired T-Test)**: Prueba de hipótesis para determinar si los métodos producen resultados colorimétricamente equivalentes ($p < 0.05$).
+    *   **Uso**:
+        .. code-block:: bash
+
+            uv run python colour_checker_detection/correction_swatches_benchmark.py
+
+
 Herramientas de Mantenimiento
 -----------------------------
 
@@ -104,22 +117,22 @@ Los resultados se generan en ``test_results/[TIMESTAMP]/``. El script principal 
 Licencia
 --------
 
-Licencia
---------
+Este proyecto es mantenido por el **Laboratorio de Arqueología Digital UC**.
 
-Este proyecto opera bajo un modelo de licenciamiento mixto para respetar el trabajo original y gestionar las nuevas contribuciones:
+Código derivado y nuevos scripts distribuidos bajo la licencia **Apache 2.0**.
 
-1.  **Core del Proyecto (Upstream)**:
-    *   **Licencia**: BSD-3-Clause.
-    *   **Archivos**: Todo el código base original (`colour_checker_detection/*`), excepto lo indicado abajo.
-    *   **Detalles**: Ver archivo ``LICENSE``.
+**Apache License 2.0**
 
-2.  **Scripts de Inferencia (YOLOv8)**:
-    *   **Licencia**: GNU AGPLv3.
-    *   **Archivos**: Módulos que importan ``ultralytics`` (`scripts/inference.py`).
-    *   **Detalles**: Requerido por la licencia de la librería Ultralytics.
+Copyright 2018 Laboratorio de Arqueología Digital UC
 
-3.  **Scripts de Corrección Personalizados**:
-    *   **Licencia**: Apache 2.0.
-    *   **Archivos**: ``colour_checker_detection/correction_swatches.py`` y sus modificaciones asociadas.
-    *   **Detalles**: Ver archivo ``LICENSE_APACHE``.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
