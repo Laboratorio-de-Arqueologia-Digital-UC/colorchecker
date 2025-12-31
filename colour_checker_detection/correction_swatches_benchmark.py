@@ -78,10 +78,13 @@ def calculate_centroid(quad):
     """Calcula el centroide de un cuadrilarero (4, 2)"""
     return np.mean(quad, axis=0)
 
-def main():
-    base_dir = Path("G:/colour-checker-detection")
-    images_dir = base_dir / "colour_checker_detection" / "local_test"
+def main(images_dir: Path | None = None):
+    if images_dir is None:
+        base_dir = Path("G:/colour-checker-detection")
+        images_dir = base_dir / "colour_checker_detection" / "local_test"
     
+def run_benchmark_analysis(images_dir: Path):
+    """Ejecuta el benchmark y retorna datos estructurados."""
     img_files = (
         list(images_dir.glob("*.CR2")) + 
         list(images_dir.glob("*.ARW")) + 
@@ -90,8 +93,7 @@ def main():
     
     if not img_files:
         LOGGER.error("No images found in %s", images_dir)
-        return
-
+        return None
 
     # Global accumulators for T-Test
     seg_rgb_all = []
@@ -102,9 +104,6 @@ def main():
     data_time = []  # {image, method, time}
     data_comp = []  # {image, diff_de, diff_drift}
     
-    seg_rgb_all = []
-    temp_rgb_all = []
-
     # Use a context manager to suppress warnings during the whole execution
     with suppress_warnings(python_warnings=True):
         
@@ -126,18 +125,6 @@ def main():
                 settings["working_height"] = h
                 
                 rect_canon = np.array([[0, 0], [w, 0], [w, h], [0, h]], dtype=np.float32)
-
-                # Reference Prep for Accuracy (dE vs Ref)
-                # We need to know 'true' values to calculate dE for each method individually.
-                # Since we don't have ground truth, 'dE 2000' in the first table likely refers to
-                # the error AFTER correction using that method's detection.
-                # This aligns with correction_swatches.py logic.
-                
-                # ... skipped full reference setup for brevity, relying on internal `correction` call if needed,
-                # BUT `sample_colour_checker` only gives extracted. 
-                # To get dE vs Ref, we must run the correction flow or just compare extracted vs Ref (which is HUGE in linear).
-                # The user likely wants the "dE after correction".
-                # Let's perform the CHECK inside the loop.
 
                 # 2. Run Segmentation
                 t0 = time.time()
@@ -161,23 +148,9 @@ def main():
                 quad_seg = res_seg[0].quadrilateral if has_seg else None
                 quad_temp = res_temp[0].quadrilateral if has_temp else None
                 
-                # Settings for extraction (disable auto-ref)
                 settings_extract = settings.copy()
                 settings_extract["reference_values"] = None
                 
-                # Common Ref for dE calc (AdobeRGB D65)
-                # (Re-using logic from correction_swatches.py would be ideal, but for now we simplify)
-                # We will just capture the RGB values. If dE vs Ref is needed, we need the Ref.
-                # To keep it simple and safe: We will report the Extracted RGB.
-                # The User's "dE 2000" column in RGB table -> Let's calculate it vs the OTHER method if both exist?
-                # OR vs Reference?
-                # Given the user put it in a single method row, it implies vs Reference (Accuracy).
-                # Determining Reference for RAW is hard without calibration.
-                # However, previous output showed "dE_MEAN | 14.88". That was Seg vs Temp.
-                # IF the user wants that, we can put it there.
-                # But they asked for "Valores RGB".
-                
-                # Let's collect extraction
                 rgb_seg = None
                 rgb_temp = None
                 
@@ -185,13 +158,6 @@ def main():
                     data_s = sample_colour_checker(img_linear, quad_seg, rect_canon, **settings_extract)
                     if data_s:
                         rgb_seg = data_s.swatch_colours
-                        # We don't have individual dE vs Ref unless we run correction.
-                        # We will leave dE column as N/A or calculate if we implement the full pipeline.
-                        # For benchmark speed, maybe skip full correction?
-                        # User asked for "dE 2000" in the table. 
-                        # I will populate it with "N/A" for now unless I bring in the full Ref logic.
-                        # actually, let's bring the Ref logic back, it's safer.
-                        pass
 
                 if has_temp:
                     data_t = sample_colour_checker(img_linear, quad_temp, rect_canon, **settings_extract)
@@ -225,12 +191,6 @@ def main():
                      seg_rgb_all.extend(rgb_seg)
                      temp_rgb_all.extend(rgb_temp)
                      
-                     # Fill Main RGB Table
-                     # We will use the dE (Seg vs Temp) as the value in the column?
-                     # No, that's confusing.
-                     # Let's calculate dE vs Reference (D65 AdobeRGB) AFTER correction (Cheung 2004).
-                     # This gives "Accuracy".
-                     
                      # --- Prepare References (Once) ---
                      if 'swatches_ref_adobe' not in locals():
                          cc_ref_data = colour.characterisation.CCS_COLOURCHECKERS['ColorChecker24 - After November 2014']
@@ -242,7 +202,6 @@ def main():
                          w_d50_XYZ = colour.xy_to_XYZ(w_d50)
                          w_d65_XYZ = colour.xy_to_XYZ(w_d65)
                          XYZ_ref_d65 = colour.chromatic_adaptation(XYZ_ref_d50, w_d50_XYZ, w_d65_XYZ)
-                         # Simple normalization
                          XYZ_ref_d65_norm = XYZ_ref_d65 * (w_d65_XYZ / XYZ_ref_d65[18])
                          swatches_ref_adobe = colour.XYZ_to_RGB(XYZ_ref_d65_norm, adobe_rgb, w_d65, chromatic_adaptation_transform=None)
                          Lab_ref = colour.XYZ_to_Lab(colour.RGB_to_XYZ(swatches_ref_adobe, adobe_rgb, w_d65, chromatic_adaptation_transform=None), w_d65)
@@ -271,6 +230,36 @@ def main():
 
             except Exception as e:
                 LOGGER.error(f"Error extracting {img_path.name}: {e}")
+    
+    # Statistical Significance
+    stats_res = {}
+    if seg_rgb_all and temp_rgb_all:
+         from scipy import stats as st
+         seg_flat = np.array(seg_rgb_all).flatten()
+         temp_flat = np.array(temp_rgb_all).flatten()
+         t_stat, p_val = st.ttest_rel(seg_flat, temp_flat)
+         stats_res = {"t_stat": t_stat, "p_val": p_val}
+
+    return {
+        "data_rgb": data_rgb,
+        "data_time": data_time,
+        "data_comp": data_comp,
+        "stats": stats_res
+    }
+
+def main(images_dir: Path | None = None):
+    if images_dir is None:
+        base_dir = Path("G:/colour-checker-detection")
+        images_dir = base_dir / "colour_checker_detection" / "local_test"
+    
+    results = run_benchmark_analysis(images_dir)
+    if not results:
+        return
+
+    data_rgb = results["data_rgb"]
+    data_time = results["data_time"]
+    data_comp = results["data_comp"]
+    stats_res = results["stats"]
 
     # --- PRINT TABLES ---
     
@@ -295,11 +284,9 @@ def main():
          print(f"|{row['Image']:<20} | {row['Mean dE (Seg vs Temp)']:<16.4f} | {row['Drift (px)']:<12.2f} |")
 
     # Statistical Significance
-    if seg_rgb_all and temp_rgb_all:
-         from scipy import stats as st
-         seg_flat = np.array(seg_rgb_all).flatten()
-         temp_flat = np.array(temp_rgb_all).flatten()
-         t_stat, p_val = st.ttest_rel(seg_flat, temp_flat)
+    if stats_res:
+         t_stat = stats_res['t_stat']
+         p_val = stats_res['p_val']
          
          print("\nSignificancia Estadística (Paired T-Test):")
          print(f"|{'Metric':<20} |{'Value':<20} |")

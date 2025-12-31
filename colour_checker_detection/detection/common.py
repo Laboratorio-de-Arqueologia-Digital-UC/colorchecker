@@ -630,9 +630,13 @@ def detect_contours(
     image_g = np.max(image, axis=-1)
 
     # Normalisation
-    image_g = (
-        linear_conversion(image_g, (np.min(image_g), np.max(image_g)), (0, 1)) * 255
-    ).astype(np.uint8)
+    min_val, max_val = np.min(image_g), np.max(image_g)
+    if max_val == min_val:
+        image_g = np.zeros_like(image_g, dtype=np.uint8)
+    else:
+        image_g = (
+            linear_conversion(image_g, (min_val, max_val), (0, 1)) * 255
+        ).astype(np.uint8)
 
     # Denoising
     image_d = image_g

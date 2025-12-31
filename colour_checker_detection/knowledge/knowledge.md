@@ -557,3 +557,47 @@ Para cumplir con los requisitos de la licencia **AGPL-3.0** (`ultralytics`) sin 
 3.  **Resultado**: Si un script (como `correction_template.py`) no importa ni usa funciones de inferencia, la librería `ultralytics` nunca se carga en memoria. Esto significa que el proceso en ejecución permanece libre de las obligaciones virales de la AGPL.
 
 Esta estrategia permite distribuir el paquete como una herramienta dual: "Segura" por defecto, con capacidades "AGPL" opcionales activables por el usuario.
+
+---
+
+## 25. Estrategia de Testing Automatizado
+
+### Desafío: Imágenes RAW Gigantes
+Los test automatizados (CI) no pueden depender de imágenes RAW de 50MB-100MB (`.CR2`, `.ARW`) por razones de ancho de banda y almacenamiento en repositorios git estándar.
+- **Solución LFS**: Se configuró Git LFS (Large File Storage) para almacenar estos binarios. El pipeline de CI debe habilitar `lfs: true` para descargarlos.
+- **Skipping Gracioso**: Los tests están diseñados con condicionales `if not images_dir.exists(): pytest.skip()`. Esto permite que el suite de pruebas pase en entornos ligeros (sin LFS) verificando solo la lógica estructural, mientras que realiza una verificación completa ("Heavy") si los archivos están presentes.
+
+### Refactorización para Testabilidad
+Para permitir tests unitarios robustos, se debió refactorizar el estilo "script" (`process_image`) de los archivos principales:
+1.  **Inyección de Dependencias**: `main(images_dir, output_dir)` ahora acepta argumentos opcionales. Esto permite a `pytest` inyectar directorios temporales (`tmp_path`) y conjuntos de datos controlados, en lugar de depender de rutas fijas ("hardcoded").
+2.  **Desacople de Visualización**: Las llamadas bloqueantes como `plt.show()` son letales para CI. Se encapsularon o se mockean (`monkeypatch`) durante los tests para asegurar que la ejecución no se detenga.
+3.  **Retorno de Datos**: Las funciones principales ahora retornan estructuras de datos (diccionarios con CCM, métricas), no solo `None`. Esto permite aserciones matemáticas (`assert ccm.shape == (3,3)`) en lugar de solo verificar si un archivo PNG se creó.
+
+---
+
+## 26. Error de Detección en Imágenes Vacías (Bug Fix)
+
+### Problema
+El método `detect_colour_checkers_templated` fallaba con `ValueError: min() arg is an empty sequence` cuando se le pasaba una imagen vacía o donde el pre-filtrado geométrico eliminaba todos los contornos candidatos.
+- **Causa**: La lista `warping_data` quedaba vacía, y la función intentaba encontrar el mínimo costo sobre ella sin verificar su longitud.
+- **Solución**: Se agregó una guarda explícita:
+  ```python
+  if not warping_data:
+      return ()
+  ```
+  Esto asegura que el pipeline maneje elegantemente imágenes "basura" o sin cartas, devolviendo una tupla vacía en lugar de crashear el proceso completo.
+
+---
+
+## 27. Implementación de CI/CD (GitHub Actions)
+
+### Requisitos de Sistema
+Para procesar imágenes y ejecutar `opencv-python` en entornos Linux (Ubuntu runners), es mandatorio instalar librerías gráficas de sistema que no vienen preinstaladas en contenedores mínimos:
+- **Dependencia Crítica**: `libgl1-mesa-glx` (`libgl1`).
+- **Síntoma de Falta**: Errores tipo `ImportError: libGL.so.1: cannot open shared object file`.
+
+### Configuración de Pipeline
+El archivo `.github/workflows/ci.yml` se configuró para:
+1.  **Dependencias de Sistema**: `sudo apt-get install -y libgl1-mesa-glx`.
+2.  **Checkout LFS**: `lfs: true` para traer las imágenes de prueba.
+3.  **Strict Mode**: Se eliminó `continue-on-error: true`. Un pipeline de CI debe fallar (rojo) si hay errores de linting o tests fallidos; permitir que continúe ("verde falso") oculta regresiones críticas.

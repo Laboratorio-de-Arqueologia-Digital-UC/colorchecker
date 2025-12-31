@@ -716,6 +716,11 @@ def extractor_templated(
                 if cost < settings.transformation_cost_threshold:
                     break
 
+    if not warping_data:
+        if additional_data:
+            return ()
+        return ()
+
     best_warping_data = min(warping_data, key=lambda x: x.cost)
     transformation = best_warping_data.transformation
 

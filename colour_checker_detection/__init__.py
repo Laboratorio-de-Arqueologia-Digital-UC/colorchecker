@@ -84,10 +84,7 @@ __all__ += ["ROOT_RESOURCES", "ROOT_RESOURCES_EXAMPLES", "ROOT_RESOURCES_TESTS"]
 
 __application_name__ = "Colour - Checker Detection"
 
-__major_version__ = "0"
-__minor_version__ = "2"
-__change_version__ = "3"
-__version__ = f"{__major_version__}.{__minor_version__}.{__change_version__}"
+__version__ = "0.2.3"
 
 try:
     _version = (

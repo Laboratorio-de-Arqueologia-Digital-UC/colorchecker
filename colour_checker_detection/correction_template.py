@@ -135,10 +135,11 @@ def get_transf_matrix_and_centers(w, h, quad):
     proj_centers = cv2.perspectiveTransform(rect_centers, H).reshape(-1, 2)
     return proj_centers
 
-def main():
+def main(images_dir: Path | None = None, output_dir: Path | None = None):
     # 1. Configuración
-    base_dir = Path("G:/colour-checker-detection") # Asumiendo path del user
-    images_dir = base_dir / "colour_checker_detection" / "local_test"
+    if images_dir is None:
+        base_dir = Path("G:/colour-checker-detection") # Asumiendo path del user
+        images_dir = base_dir / "colour_checker_detection" / "local_test"
     
     # BUSCAR IMAGENES (.CR2, .ARW, .RAF)
     img_files = (
@@ -151,9 +152,11 @@ def main():
         return
         
     # Output Dir
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    # User Request: Save to test_results
-    output_dir = base_dir / "colour_checker_detection" / "test_results" / timestamp
+    if output_dir is None:
+        base_dir = Path("G:/colour-checker-detection")
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        # User Request: Save to test_results
+        output_dir = base_dir / "colour_checker_detection" / "test_results" / timestamp
     output_dir.mkdir(parents=True, exist_ok=True)
 
     for img_path in img_files:
