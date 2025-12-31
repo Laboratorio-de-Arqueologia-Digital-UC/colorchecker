@@ -98,7 +98,6 @@ def read_raw_high_res(path: Path, brightness: float = 1.5, linear: bool = False)
         return as_float_array(img_rgb) / 255.0
 
 
-
 def process_image(img_path: Path, output_dir: Path | None = None):
     """Procesa una imagen individual y retorna resultados para testing."""
     LOGGER.info("=== PROCESANDO IMAGEN: %s ===", img_path.name)
@@ -428,6 +427,3 @@ def main(images_dir: Path | None = None, output_dir: Path | None = None):
 
 if __name__ == "__main__":
     main()
-
-
-

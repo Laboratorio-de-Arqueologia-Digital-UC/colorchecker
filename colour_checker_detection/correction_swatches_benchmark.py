@@ -75,7 +75,6 @@ def calculate_centroid(quad):
     return np.mean(quad, axis=0)
 
 
-
 def run_benchmark_analysis(images_dir: Path):
     """Ejecuta el benchmark y retorna datos estructurados."""
     img_files = (

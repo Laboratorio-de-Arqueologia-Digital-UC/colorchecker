@@ -163,6 +163,10 @@ ignore = [
     "N816", # Variable in global scope should not be mixedCase
     "B008", # Do not perform function call in argument defaults
     "E501", # Line too long
+    "E402", # Module level import not at top of file
+    "F841", # Unused local variable
+    "B023", # Function definition does not bind loop variable
+    "F401", # Module imported but unused
 ]
 typing-modules = ["colour.hints"]
 

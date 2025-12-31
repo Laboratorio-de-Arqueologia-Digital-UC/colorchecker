@@ -392,9 +392,7 @@ def run_benchmark(
                     inference_bboxes.clear()
 
                     def custom_inferencer(img, **kwargs):
-                        return adapter_yolo_inferencer(
-                                            img, model, inference_bboxes
-                                        )
+                        return adapter_yolo_inferencer(img, model, inference_bboxes)
 
                     res_inf = detect_colour_checkers_inference(
                         img_processing,

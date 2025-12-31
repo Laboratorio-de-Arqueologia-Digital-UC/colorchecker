@@ -84,7 +84,6 @@ __email__ = "victor.mendez@uc.cl"
 __status__ = "Development"
 
 
-
 def process_image(img_path: Path, output_dir: Path | None = None):
     """Procesa una imagen individual y retorna resultados para testing."""
     LOGGER.info("=== PROCESANDO IMAGEN: %s ===", img_path.name)
@@ -259,6 +258,3 @@ def main(images_dir: Path | None = None, output_dir: Path | None = None):
 
 if __name__ == "__main__":
     main()
-
-
-
