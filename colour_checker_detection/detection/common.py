@@ -1320,11 +1320,12 @@ def sample_colour_checker(
 
     # TODO: Update when "Colour" 0.4.5 is released.
     if settings.reference_values is None:
-        usage_warning(
-            "Cannot compute the colour checker orientation because the "
-            'reference values are not available! Please update "Colour" to a '
-            "version greater-than 0.4.4."
-        )
+        # usage_warning(
+        #     "Cannot compute the colour checker orientation because the "
+        #     'reference values are not available! Please update "Colour" to a '
+        #     "version greater-than 0.4.4."
+        # )
+        pass
     else:
         reference_mse = metric_mse(settings.reference_values, sampled_colours)
         candidate_quadrilateral = np.copy(quadrilateral)

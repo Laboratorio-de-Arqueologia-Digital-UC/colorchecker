@@ -35,15 +35,19 @@ from .common import (
     transform_image,
 )
 
+
 # isort: split
 
-from .inference import (
-    SETTINGS_INFERENCE_COLORCHECKER_CLASSIC,
-    SETTINGS_INFERENCE_COLORCHECKER_CLASSIC_MINI,
-    detect_colour_checkers_inference,
-    extractor_inference,
-    inferencer_default,
-)
+import typing
+
+if typing.TYPE_CHECKING:
+    from .inference import (
+        SETTINGS_INFERENCE_COLORCHECKER_CLASSIC,
+        SETTINGS_INFERENCE_COLORCHECKER_CLASSIC_MINI,
+        detect_colour_checkers_inference,
+        extractor_inference,
+        inferencer_default,
+    )
 
 # isort: split
 
@@ -136,3 +140,31 @@ __all__ += [
 __all__ += [
     "plot_detection_results",
 ]
+
+
+def __getattr__(name: str) -> typing.Any:
+    """
+    Return the value of the attribute with the given name.
+
+    Parameters
+    ----------
+    name
+        Name of the attribute to return.
+
+    Returns
+    -------
+    :class:`typing.Any`
+        Value of the attribute.
+    """
+    if name in [
+        "SETTINGS_INFERENCE_COLORCHECKER_CLASSIC",
+        "SETTINGS_INFERENCE_COLORCHECKER_CLASSIC_MINI",
+        "detect_colour_checkers_inference",
+        "extractor_inference",
+        "inferencer_default",
+    ]:
+        import importlib
+
+        return getattr(importlib.import_module(f".inference", __package__), name)
+
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")

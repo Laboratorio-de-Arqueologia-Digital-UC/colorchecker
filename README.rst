@@ -38,7 +38,7 @@ Esto instalará automáticamente todas las dependencias definidas en ``pyproject
 *   ``colour-science``
 *   ``rawpy``
 *   ``opencv-python``
-*   ``ultralytics`` (para inferencia YOLO)
+*   ``ultralytics`` (opcional, para inferencia YOLO)
 *   ``matplotlib``
 
 Scripts Principales
@@ -124,16 +124,25 @@ Los resultados se generan en ``test_results/[TIMESTAMP]/``. El script principal 
 *   **Panel E (Error)**: Gráfico de barras mostrando el error Delta E 2000 para cada parche individual, junto con el promedio (Avg) y máximo (Max).
 *   **Panel F (Resultado Final)**: Previsualización de la imagen completa corregida colorimétricamente.
 
-Licencia
---------
+Licencia y Cumplimiento
+-----------------------
 
-Este proyecto es mantenido por el **Laboratorio de Arqueología Digital UC**.
+Este proyecto utiliza un modelo de **Licenciamiento Dual/Aislado** para maximizar la compatibilidad comercial sin violar los términos de las dependencias.
 
-Código derivado y nuevos scripts distribuidos bajo la licencia **Apache 2.0**.
+1.  **Código Base (Apache 2.0 / BSD-3-Clause)**:
+    El núcleo del proyecto, incluyendo `correction_template.py` y los algoritmos de segmentación, es puramente **Apache 2.0**. No contiene ni importa código AGPL por defecto.
+
+2.  **Módulo de Inferencia (AGPL-3.0 - Opcional)**:
+    La funcionalidad de YOLOv8 (`ultralytics`) está aislada en el módulo `inference` y solo se carga si se usa explícitamente `detect_colour_checkers_inference` o el script de inferencia.
+    
+    .. warning::
+        Al activar la inferencia YOLO, el proceso en ejecución queda sujeto a la licencia **AGPL-3.0**.
+
+Consulte el reporte detallado en `LICENSE_COMPLIANCE.md` para más detalles sobre cómo mantener su pipeline "limpio".
 
 **Apache License 2.0**
 
-Copyright 2018 Laboratorio de Arqueología Digital UC
+Copyright 2024 Laboratorio de Arqueología Digital UC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

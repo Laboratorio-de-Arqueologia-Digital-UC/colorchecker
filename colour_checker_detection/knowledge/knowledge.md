@@ -544,3 +544,16 @@ El script `correction_template.py` genera un archivo JSON por imagen procesada, 
 -   **coordinates_px**: Útiles para auditoría visual y re-muestreo.
 -   **color_detected_linear**: "Materia prima" para cálculos científicos externos.
 -   **delta_e_2000**: Métrica de calidad inmediata por parche.
+
+---
+
+## 24. Licenciamiento y Arquitectura Modular
+
+### Estrategia de Aislamiento
+Para cumplir con los requisitos de la licencia **AGPL-3.0** (`ultralytics`) sin comprometer la naturaleza **Apache-2.0** del resto del proyecto, se ha diseñado una arquitectura de **Lazy Loading**.
+
+1.  **Separación Física**: El código de inferencia reside en `colour_checker_detection.detection.inference`.
+2.  **Carga Diferida**: `colour_checker_detection.detection.__init__` utiliza `__getattr__` para importar este submódulo **solo** cuando se intenta acceder a él.
+3.  **Resultado**: Si un script (como `correction_template.py`) no importa ni usa funciones de inferencia, la librería `ultralytics` nunca se carga en memoria. Esto significa que el proceso en ejecución permanece libre de las obligaciones virales de la AGPL.
+
+Esta estrategia permite distribuir el paquete como una herramienta dual: "Segura" por defecto, con capacidades "AGPL" opcionales activables por el usuario.

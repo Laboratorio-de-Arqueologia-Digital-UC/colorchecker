@@ -205,9 +205,9 @@ def main():
         # Referencias en AdobeRGB Lineal (usando los valores normalizados)
         swatches_ref_adobe = colour.XYZ_to_RGB(
             XYZ_ref_d65_norm, 
-            w_d65_xy, 
-            w_d65_xy, 
-            adobe_rgb_space.matrix_XYZ_to_RGB
+            adobe_rgb_space,
+            w_d65_xy,
+            chromatic_adaptation_transform=None
         )
 
         # 5. Procesamiento por cada método detectado
@@ -258,18 +258,18 @@ def main():
                 
                 # --- EVALUACIÓN DELTA E ---
                 XYZ_corr = colour.RGB_to_XYZ(
-                    swatches_corrected, 
-                    adobe_rgb_space.whitepoint, 
-                    adobe_rgb_space.whitepoint, 
-                    adobe_rgb_space.matrix_RGB_to_XYZ
+                    swatches_corrected,
+                    adobe_rgb_space,
+                    w_d65_xy,
+                    chromatic_adaptation_transform=None
                 )
                 Lab_corr = colour.XYZ_to_Lab(XYZ_corr, adobe_rgb_space.whitepoint)
                 
                 XYZ_ref = colour.RGB_to_XYZ(
-                    swatches_ref_adobe, 
-                    adobe_rgb_space.whitepoint, 
-                    adobe_rgb_space.whitepoint, 
-                    adobe_rgb_space.matrix_RGB_to_XYZ
+                    swatches_ref_adobe,
+                    adobe_rgb_space,
+                    w_d65_xy,
+                    chromatic_adaptation_transform=None
                 )
                 Lab_ref = colour.XYZ_to_Lab(XYZ_ref, adobe_rgb_space.whitepoint)
                 

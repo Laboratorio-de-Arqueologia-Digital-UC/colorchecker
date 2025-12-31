@@ -203,9 +203,9 @@ def main():
                 if rgb_seg is not None and rgb_temp is not None:
                      # Calculate dE between Seg and Temp
                      RGB_COLOURSPACE = colour.models.RGB_COLOURSPACES['Adobe RGB (1998)']
-                     XYZ_s = colour.RGB_to_XYZ(rgb_seg, RGB_COLOURSPACE.whitepoint, RGB_COLOURSPACE.whitepoint, RGB_COLOURSPACE.matrix_RGB_to_XYZ)
+                     XYZ_s = colour.RGB_to_XYZ(rgb_seg, RGB_COLOURSPACE, RGB_COLOURSPACE.whitepoint, chromatic_adaptation_transform=None)
                      Lab_s = colour.XYZ_to_Lab(XYZ_s, RGB_COLOURSPACE.whitepoint)
-                     XYZ_t = colour.RGB_to_XYZ(rgb_temp, RGB_COLOURSPACE.whitepoint, RGB_COLOURSPACE.whitepoint, RGB_COLOURSPACE.matrix_RGB_to_XYZ)
+                     XYZ_t = colour.RGB_to_XYZ(rgb_temp, RGB_COLOURSPACE, RGB_COLOURSPACE.whitepoint, chromatic_adaptation_transform=None)
                      Lab_t = colour.XYZ_to_Lab(XYZ_t, RGB_COLOURSPACE.whitepoint)
                      
                      de_arr = colour.delta_E(Lab_s, Lab_t, method="CIE 2000")
@@ -244,18 +244,18 @@ def main():
                          XYZ_ref_d65 = colour.chromatic_adaptation(XYZ_ref_d50, w_d50_XYZ, w_d65_XYZ)
                          # Simple normalization
                          XYZ_ref_d65_norm = XYZ_ref_d65 * (w_d65_XYZ / XYZ_ref_d65[18])
-                         swatches_ref_adobe = colour.XYZ_to_RGB(XYZ_ref_d65_norm, w_d65, w_d65, adobe_rgb.matrix_XYZ_to_RGB)
-                         Lab_ref = colour.XYZ_to_Lab(colour.RGB_to_XYZ(swatches_ref_adobe, w_d65, w_d65, adobe_rgb.matrix_RGB_to_XYZ), w_d65)
+                         swatches_ref_adobe = colour.XYZ_to_RGB(XYZ_ref_d65_norm, adobe_rgb, w_d65, chromatic_adaptation_transform=None)
+                         Lab_ref = colour.XYZ_to_Lab(colour.RGB_to_XYZ(swatches_ref_adobe, adobe_rgb, w_d65, chromatic_adaptation_transform=None), w_d65)
                      
                      # Calculate Accuracy for Seg
                      sw_c_seg = colour.colour_correction(rgb_seg, rgb_seg, swatches_ref_adobe, method='Cheung 2004')
-                     XYZ_c_s = colour.RGB_to_XYZ(sw_c_seg, w_d65, w_d65, adobe_rgb.matrix_RGB_to_XYZ)
+                     XYZ_c_s = colour.RGB_to_XYZ(sw_c_seg, adobe_rgb, w_d65, chromatic_adaptation_transform=None)
                      Lab_c_s = colour.XYZ_to_Lab(XYZ_c_s, w_d65)
                      de_seg_ref = colour.delta_E(Lab_c_s, Lab_ref, method="CIE 2000")
                      
                      # Calculate Accuracy for Temp
                      sw_c_temp = colour.colour_correction(rgb_temp, rgb_temp, swatches_ref_adobe, method='Cheung 2004')
-                     XYZ_c_t = colour.RGB_to_XYZ(sw_c_temp, w_d65, w_d65, adobe_rgb.matrix_RGB_to_XYZ)
+                     XYZ_c_t = colour.RGB_to_XYZ(sw_c_temp, adobe_rgb, w_d65, chromatic_adaptation_transform=None)
                      Lab_c_t = colour.XYZ_to_Lab(XYZ_c_t, w_d65)
                      de_temp_ref = colour.delta_E(Lab_c_t, Lab_ref, method="CIE 2000")
                      

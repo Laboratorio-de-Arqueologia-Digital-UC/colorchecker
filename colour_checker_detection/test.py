@@ -22,7 +22,10 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 import rawpy
-from ultralytics import YOLO
+try:
+    from ultralytics import YOLO
+except ImportError:
+    YOLO = None
 
 # Importaciones de la librería interna
 from colour.hints import NDArrayFloat, cast
@@ -274,8 +277,12 @@ def run_benchmark(
         LOGGER.error("Modelo no encontrado en: %s", model_path)
         return
 
-    LOGGER.info("Cargando modelo YOLO: %s", model_path)
-    model = YOLO(str(model_path))
+    model = None
+    if YOLO is not None:
+        LOGGER.info("Cargando modelo YOLO: %s", model_path)
+        model = YOLO(str(model_path))
+    else:
+        LOGGER.warning("Ultralytics not installed. Inference method will be skipped.")
 
     image_files = []
     for ext in extensions:
@@ -336,33 +343,36 @@ def run_benchmark(
                 results["Segmentación"] = []
 
             # --- MÉTODO 2: INFERENCIA (YOLO Wrappeado) ---
-            LOGGER.info(">> Ejecutando INFERENCIA (YOLO Wrappeado)...")
-            try:
-                inference_bboxes.clear() 
-                
-                custom_inferencer = lambda img, **kwargs: adapter_yolo_inferencer(img, model, inference_bboxes)
-                
-                res_inf = detect_colour_checkers_inference(
-                    img_processing, 
-                    inferencer=custom_inferencer,
-                    inferred_confidence=0.4,
-                    extractor_kwargs=resolution_settings,
-                    additional_data=True,
-                    **resolution_settings
-                )
-                LOGGER.info("   Encontrados: %d", len(res_inf))
-                
-                # FILTRADO DE RESULTADOS: Top-1
-                if len(res_inf) > 1:
-                     LOGGER.info("   Filtrando resultados de inferencia (quedando con el mejor)...")
-                     res_inf = (res_inf[0],)
-                     if len(inference_bboxes) > 1:
-                          inference_bboxes = [inference_bboxes[0]] # Keep top 1
-                
-                results["Inferencia"] = res_inf
-            except Exception as e:
-                LOGGER.warning("   Fallo en inferencia: %s", e)
-                results["Inferencia"] = []
+            if model is not None:
+                LOGGER.info(">> Ejecutando INFERENCIA (YOLO Wrappeado)...")
+                try:
+                    inference_bboxes.clear() 
+                    
+                    custom_inferencer = lambda img, **kwargs: adapter_yolo_inferencer(img, model, inference_bboxes)
+                    
+                    res_inf = detect_colour_checkers_inference(
+                        img_processing, 
+                        inferencer=custom_inferencer,
+                        inferred_confidence=0.4,
+                        extractor_kwargs=resolution_settings,
+                        additional_data=True,
+                        **resolution_settings
+                    )
+                    LOGGER.info("   Encontrados: %d", len(res_inf))
+                    
+                    # FILTRADO DE RESULTADOS: Top-1
+                    if len(res_inf) > 1:
+                         LOGGER.info("   Filtrando resultados de inferencia (quedando con el mejor)...")
+                         res_inf = (res_inf[0],)
+                         if len(inference_bboxes) > 1:
+                              inference_bboxes = [inference_bboxes[0]] # Keep top 1
+                    
+                    results["Inferencia"] = res_inf
+                except Exception as e:
+                    LOGGER.warning("   Fallo en inferencia: %s", e)
+                    results["Inferencia"] = []
+            else:
+                 LOGGER.info(">> INFERENCIA (YOLO Wrappeado) - Skipped (Module not found)")
 
             # --- MÉTODO 3: PLANTILLAS ---
             LOGGER.info(">> Ejecutando PLANTILLAS (Templated)...")
