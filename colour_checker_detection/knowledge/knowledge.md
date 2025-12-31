@@ -513,3 +513,34 @@ Se utiliza una **Prueba T Pareada (Paired T-Test)** sobre los valores RGB aplana
 | **p >= 0.05** | **Equivalencia Estadística**. No hay evidencia suficiente para distinguir los métodos. Se recomienda usar el más rápido (ver tabla "Tiempo"). |
 
 Esta prueba valida si optimizaciones sutiles (ej. ajuste de quad) tienen impacto real o son despreciables frente al ruido del sensor.
+
+---
+
+## 23. Estructura de Reporte (JSON)
+
+El script `correction_template.py` genera un archivo JSON por imagen procesada, ideal para integración automatizada.
+
+### Formato de Salida
+```json
+{
+    "image": "Nombre de archivo original",
+    "method": "Templated",
+    "reference": "ColorChecker Post-2014 (D65)",
+    "swatches": [
+        {
+            "index": 0, // Índice 0-23
+            "coordinates_px": [x, y], // Centroides reales reproyectados (px)
+            "color_detected_linear": [r, g, b], // Valores RGB Lineales (del RAW)
+            "color_corrected_adobe": [r, g, b], // Valores corregidos (Espacio AdobeRGB)
+            "color_reference_adobe": [r, g, b], // Referencia teórica (Espacio AdobeRGB)
+            "delta_e_2000": 3.42 // Error de Color CIE 2000
+        },
+        ...
+    ]
+}
+```
+
+### Campos Clave
+-   **coordinates_px**: Útiles para auditoría visual y re-muestreo.
+-   **color_detected_linear**: "Materia prima" para cálculos científicos externos.
+-   **delta_e_2000**: Métrica de calidad inmediata por parche.

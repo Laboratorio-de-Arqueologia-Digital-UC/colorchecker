@@ -5,8 +5,8 @@ ColorChecker Pipeline
 
 Mantenido por el **Laboratorio de Arqueología Digital UC**.
 
-.. image:: https://raw.githubusercontent.com/colour-science/colour-checker-detection/master/docs/_static/ColourCheckerDetection_001.png
-    :alt: Colour Checker Detection
+.. image:: https://raw.githubusercontent.com/Laboratorio-de-Arqueologia-Digital-UC/colorchecker/docs/static/correction_Templated_color_checker_1.png
+    :alt: ColorChecker Pipeline
     :align: center
 
 Descripción del Proyecto
@@ -85,6 +85,16 @@ El repositorio incluye herramientas para diferentes etapas del procesado, desde 
         .. code-block:: bash
 
             uv run python colour_checker_detection/correction_swatches_benchmark.py
+
+6.  **colour_checker_detection/correction_template.py**
+    *   **Función**: Script de producción para extracción de datos. Utiliza **exclusivamente** el método de detección por **Plantillas (Templated)** para máxima robustez geométrica.
+    *   **Salidas**:
+        *   Imagen de visualización (PNG) con 6 paneles.
+        *   **Reporte JSON**: Archivo estructurado conteniendo coordenadas de píxeles, valores RGB detectados (Lineal), valores corregidos (AdobeRGB) y referencias teóricas para cada parche.
+    *   **Uso**:
+        .. code-block:: bash
+
+            uv run python colour_checker_detection/correction_template.py
 
 
 Herramientas de Mantenimiento
