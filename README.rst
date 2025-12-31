@@ -5,7 +5,7 @@ ColorChecker Pipeline
 
 Mantenido por el **Laboratorio de Arqueología Digital UC**.
 
-.. image:: https://raw.githubusercontent.com/Laboratorio-de-Arqueologia-Digital-UC/colorchecker/docs/_static/correction_Templated_color_checker_1.png
+.. image:: https://github.com/Laboratorio-de-Arqueologia-Digital-UC/colorchecker/blob/c73f5f6784c6ac98530a9a526bd5ab79c0c43713/docs/_static/correction_Templated_color_checker_1.png
     :alt: ColorChecker Pipeline
     :align: center
 
