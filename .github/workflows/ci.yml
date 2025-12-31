@@ -52,7 +52,7 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-glx
+          sudo apt-get install -y libgl1
       
       - name: Install dependencies
         run: uv sync --all-extras

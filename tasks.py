@@ -10,6 +10,7 @@ from invoke.tasks import task
 BASE_DIR = Path(__file__).parent
 RESULTS_DIR = BASE_DIR / "colour_checker_detection" / "test_results"
 
+
 def _delete_pattern(pattern: str, recursive: bool = True):
     """Ayuda para borrar archivos o carpetas por patrón."""
     for path in BASE_DIR.rglob(pattern):
@@ -19,6 +20,7 @@ def _delete_pattern(pattern: str, recursive: bool = True):
         elif path.is_file():
             print(f"Borrando archivo: {path}")
             path.unlink()
+
 
 @task
 def clean(ctx, bytecode=True, results=False, pytest=True):
@@ -30,7 +32,7 @@ def clean(ctx, bytecode=True, results=False, pytest=True):
     bytecode : bool
         Borra archivos .pyc y carpetas __pycache__ (Default: True).
     results : bool
-        Borra la carpeta de resultados de tus scripts (Default: False). 
+        Borra la carpeta de resultados de tus scripts (Default: False).
         USA CON PRECAUCIÓN.
     pytest : bool
         Borra caché de pytest (Default: True).
@@ -56,11 +58,12 @@ def clean(ctx, bytecode=True, results=False, pytest=True):
 
     print(">>> Limpieza Finalizada.")
 
+
 @task
 def requirements(ctx):
     """
     Exporta requirements.txt usando uv (útil si mueves el script a otro lado).
     """
     print(">>> Exportando requirements.txt...")
-    ctx.run('uv export --no-hashes --all-extras --no-dev > requirements.txt')
+    ctx.run("uv export --no-hashes --all-extras --no-dev > requirements.txt")
     print(">>> requirements.txt generado exitosamente.")

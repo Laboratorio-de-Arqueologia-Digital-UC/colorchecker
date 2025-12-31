@@ -143,6 +143,7 @@ addopts = "-n auto --dist=loadscope --durations=5"
 [tool.ruff]
 target-version = "py311"
 line-length = 88
+[tool.ruff.lint]
 select = ["ALL"]
 ignore = [
     "C", # Pylint - Convention
@@ -179,14 +180,13 @@ ignore = [
     "PYI056", # Calling `.append()` on `__all__` may not be supported by all type checkers (use `+=` instead)
     "RUF022", # [*] `__all__` is not sorted
     "TRY003", # Avoid specifying long messages outside the exception class
-    "UP038", #  Use `X | Y` in `isinstance` call instead of `(X, Y)`
 ]
 typing-modules = ["colour.hints"]
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["D104"]
 "colour-checker-detection/examples/*" = ["INP", "T201", "T203"]
 "docs/*" = ["INP"]

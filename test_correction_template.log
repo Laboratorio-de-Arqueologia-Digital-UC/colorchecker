@@ -1,0 +1,393 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.14, pytest-9.0.2, pluggy-1.6.0 -- G:\colour-checker-detection\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: G:\colour-checker-detection
+configfile: pyproject.toml
+plugins: anyio-4.12.0, cov-6.3.0, xdist-3.8.0
+created: 8/8 workers
+8 workers [4 items]
+
+scheduling tests via LoadScopeScheduling
+
+colour_checker_detection/tests/test_correction_template.py::test_imports_and_dependencies 
+[gw0] [ 25%] PASSED colour_checker_detection/tests/test_correction_template.py::test_imports_and_dependencies 
+colour_checker_detection/tests/test_correction_template.py::test_detection_logic_basic 
+[gw0] [ 50%] PASSED colour_checker_detection/tests/test_correction_template.py::test_detection_logic_basic 
+colour_checker_detection/tests/test_correction_template.py::test_edge_cases_empty_image 
+[gw0] [ 75%] FAILED colour_checker_detection/tests/test_correction_template.py::test_edge_cases_empty_image 
+colour_checker_detection/tests/test_correction_template.py::test_edge_cases_none_input 
+[gw0] [100%] PASSED colour_checker_detection/tests/test_correction_template.py::test_edge_cases_none_input 
+
+================================== FAILURES ===================================
+_________________________ test_edge_cases_empty_image _________________________
+[gw0] win32 -- Python 3.11.14 G:\colour-checker-detection\.venv\Scripts\python.exe
+
+    def test_edge_cases_empty_image():
+        """\u2705 Manejo de errores: Imagen vac\xeda / invalida"""
+        from colour_checker_detection.detection import detect_colour_checkers_templated
+    
+        empty_img = np.zeros((100, 100, 3), dtype=np.float32)
+        # Should return empty list, not crash
+>       res = detect_colour_checkers_templated(empty_img, additional_data=True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+colour_checker_detection\tests\test_correction_template.py:91: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+colour_checker_detection\detection\templated.py:982: in detect_colour_checkers_templated
+    extractor(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+image = array([[[ 0.,  0.,  0.],
+        [ 0.,  0.,  0.],
+        [ 0.,  0.,  0.],
+        ..., 
+        [ 0.,  0.,  0.],
+    ....,  0.,  0.],
+        ..., 
+        [ 0.,  0.,  0.],
+        [ 0.,  0.,  0.],
+        [ 0.,  0.,  0.]]], dtype=float32)
+segmentation_data = DataSegmentationColourCheckers(rectangles=array([], shape=(0, 4, 2), dtype=int32), clusters=array([], dtype=int32), sw... 255, 255, 255],
+       [255, 255, 255, ..., 255, 255, 255],
+       [255, 255, 255, ..., 255, 255, 255]], dtype=uint8))
+samples = 32, cctf_decoding = <function eotf_sRGB at 0x0000028D3DE9C720>
+apply_cctf_decoding = False, additional_data = True, kwargs = {}
+template = Template(swatch_centroids=array([[  51.,   56.],
+       [ 192.,   56.],
+       [ 333.,   56.],
+       [ 474.,   56.],
+... 16], [23, 22, 12, 13], [23, 22, 13, 14], [23, 22, 14, 15], [23, 22, 15, 16], [23, 22, 16, 17]], width=810, height=560)
+residual_threshold = 0.3
+settings = {'aspect_ratio': 1.5, 'swatches': 24, 'swatches_horizontal': 6, 'swatches_vertical': 4, 'swatches_chromatic_slice': sl...'contour_approximation_factor': 0.1, 'dbscan_eps': 0.5, 'dbscan_min_samples': 5, 'transformation_cost_threshold': 10.0}
+all_centroids = array([], dtype=float64), clustered_centroids = []
+
+    def extractor_templated(
+        image: ArrayLike,
+        segmentation_data: DataSegmentationColourCheckers,
+        samples: int = 32,
+        cctf_decoding: Callable = eotf_sRGB,
+        apply_cctf_decoding: bool = False,
+        additional_data: bool = False,
+        **kwargs: Any,
+    ) -> tuple[DataDetectionColourChecker, ...] | tuple[NDArrayFloat, ...]:
+        """
+        Extract colour swatches using template-based perspective transformation.
+    
+        This function takes segmentation data and extracts colors using template matching
+        with perspective transformation. This extractor should be used when the colour
+        checker is not facing the camera straight.
+    
+        The process is as follows:
+    
+        1.  The swatches are converted to centroids and used to filter clusters to only
+            keep the ones that contain the expected number of swatches. Moreover, the
+            centroids are grouped by the clusters.
+        2.  The centroids are ordered within their group to enforce the same ordering as
+            the template, which is important to extract the transformation, since OpenCV's
+            perspective transform is not invariant to the ordering of the points.
+        3.  The best transformation is determined by finding the transformation that
+            minimizes the average distance of the warped points from the reference
+            template points.
+        4.  The image is warped using the determined transformation.
+        5.  The colours are extracted from the warped image using a sampling window
+            around the centroids.
+        6.  The colours are corrected if the chromatic swatches have a lower standard
+            deviation than the achromatic swatches.
+    
+        Parameters
+        ----------
+        image
+            Image to extract the colour checker swatches and colours from.
+        segmentation_data
+            Segmentation colour checkers data from the segmenter.
+        samples
+            Sample count to use to average (mean) the swatches colours. The effective
+            sample count is :math:`samples^2`.
+        cctf_decoding
+            Decoding colour component transfer function / opto-electronic
+            transfer function used when converting the image from 8-bit to float.
+        apply_cctf_decoding
+            Apply the decoding colour component transfer function / opto-electronic
+            transfer function.
+        additional_data
+            Whether to output additional data.
+    
+        Other Parameters
+        ----------------
+        template
+            Template defining the swatches structure, which is exploited to find the best
+            correspondences between template and detected swatches, which yield the
+            optimal transformation. If not provided, defaults to built-in ColorChecker
+            Classic template.
+        residual_threshold
+            Maximum allowed residual between detected and template colours.
+            Higher values are more permissive. Default is 0.3 (30%).
+        adaptive_threshold_kwargs
+            Keyword arguments for :func:`cv2.adaptiveThreshold` definition.
+        aspect_ratio
+            Colour checker aspect ratio, e.g. 1.5.
+        aspect_ratio_minimum
+            Minimum colour checker aspect ratio for detection: projective geometry
+            might reduce the colour checker aspect ratio.
+        aspect_ratio_maximum
+            Maximum colour checker aspect ratio for detection: projective geometry
+            might increase the colour checker aspect ratio.
+        bilateral_filter_iterations
+            Number of iterations to use for bilateral filtering.
+        bilateral_filter_kwargs
+            Keyword arguments for :func:`cv2.bilateralFilter` definition.
+        contour_approximation_factor
+            Approximation factor for the Douglas-Peucker polygon approximation algorithm.
+            It controls how aggressively contours are simplified, expressed as a fraction
+            of the contour's perimeter. Lower values (e.g., 0.01) preserve more detail,
+            higher values (e.g., 0.1) simplify more aggressively.
+        convolution_iterations
+            Number of iterations to use for the erosion / dilation process.
+        convolution_kernel
+            Convolution kernel to use for the erosion / dilation process.
+        dbscan_eps
+            DBSCAN epsilon parameter defining the maximum distance between two samples
+            for them to be considered in the same neighborhood. Lower values create
+            tighter clusters. Default is 0.5.
+        dbscan_min_samples
+            DBSCAN minimum samples parameter defining the number of samples in a
+            neighborhood for a point to be considered a core point. Default is 5.
+        transformation_cost_threshold
+            Cost threshold for early termination of transformation search. If a
+            transformation achieves an average distance below this threshold, the search
+            stops immediately. Lower values require better matches. Default is 10.0.
+        interpolation_method
+            Interpolation method used when resizing the images, `cv2.INTER_CUBIC`
+            and `cv2.INTER_LINEAR` methods are recommended.
+        reference_values
+            Reference values for the colour checker of interest.
+        swatch_contour_scale
+            As the image is filtered, the swatches area will tend to shrink, the
+            generated contours can thus be scaled.
+        swatch_minimum_area_factor
+            Swatch minimum area factor :math:`f` with the minimum area :math:`m_a`
+            expressed as follows: :math:`m_a = image_w * image_h / s_c / f` where
+            :math:`image_w`, :math:`image_h` and :math:`s_c` are respectively the
+            image width, height and the swatches count.
+        swatches
+            Colour checker swatches total count.
+        swatches_achromatic_slice
+            A `slice` instance defining achromatic swatches used to detect if the
+            colour checker is upside down.
+        swatches_chromatic_slice
+            A `slice` instance defining chromatic swatches used to detect if the
+            colour checker is upside down.
+        swatches_count_maximum
+            Maximum swatches count to be considered for the detection.
+        swatches_count_minimum
+            Minimum swatches count to be considered for the detection.
+        swatches_horizontal
+            Colour checker swatches horizontal columns count.
+        swatches_vertical
+            Colour checker swatches vertical row count.
+        transform
+            Transform to apply to the colour checker image post-detection.
+        working_width
+            Width the input image is resized to for detection.
+        working_height
+            Height the input image is resized to for detection.
+    
+        Returns
+        -------
+        :class`tuple`
+            Tuple of :class:`DataDetectionColourChecker` class
+            instances or colour checkers swatches.
+    
+        Examples
+        --------
+        >>> import os
+        >>> from colour import read_image
+        >>> from colour_checker_detection import (
+        ...     ROOT_RESOURCES_TESTS,
+        ...     segmenter_templated,
+        ...     extractor_templated,
+        ... )
+        >>> path = os.path.join(
+        ...     ROOT_RESOURCES_TESTS,
+        ...     "colour_checker_detection",
+        ...     "detection",
+        ...     "IMG_1967.png",
+        ... )
+        >>> image = read_image(path)
+        >>> segmentation_data = segmenter_templated(image, additional_data=True)
+        >>> extractor_templated(image, segmentation_data)  # doctest: +SKIP
+        (array([[ 0.36081576,  0.22396202,  0.11733589],
+               [ 0.6274815 ,  0.39514375,  0.24308297],
+               [ 0.33063054,  0.3158751 ,  0.28996205],
+               [ 0.30372787,  0.2742474 ,  0.10494538],
+               [ 0.41764253,  0.31940183,  0.30804706],
+               [ 0.34960267,  0.44142178,  0.29417506],
+               [ 0.682801  ,  0.3538923 ,  0.07184852],
+               [ 0.27251157,  0.2532009 ,  0.33145225],
+               [ 0.62005484,  0.2703342 ,  0.18676178],
+               [ 0.3079272 ,  0.1803046 ,  0.19187638],
+               [ 0.48746303,  0.4604792 ,  0.03282085],
+               [ 0.6541456 ,  0.40173233,  0.01583917],
+               [ 0.19250122,  0.185604  ,  0.2739023 ],
+               [ 0.28076768,  0.38508102,  0.12207687],
+               [ 0.5527626 ,  0.21404609,  0.1256289 ],
+               [ 0.7217179 ,  0.51569265,  0.00520882],
+               [ 0.57813776,  0.25853688,  0.26927036],
+               [ 0.17615536,  0.31684747,  0.29624644],
+               [ 0.74493927,  0.6126149 ,  0.44073734],
+               [ 0.6314545 ,  0.5187937 ,  0.3728771 ],
+               [ 0.5143494 ,  0.42190555,  0.29967216],
+               [ 0.37282884,  0.30393514,  0.21030639],
+               [ 0.2645776 ,  0.21623953,  0.1437975 ],
+               [ 0.16090113,  0.13422866,  0.081468  ]], dtype=float32),)
+        """
+    
+        template = kwargs.pop("template", TEMPLATE_COLORCHECKER_CLASSIC)
+        residual_threshold = kwargs.pop("residual_threshold", 0.3)
+    
+        settings = Structure(**SETTINGS_TEMPLATED_COLORCHECKER_CLASSIC)
+        settings.update(**kwargs)
+    
+        if apply_cctf_decoding:
+            image = cctf_decoding(image)
+    
+        image = reformat_image(image, settings.working_width, settings.interpolation_method)
+    
+        image = cast("NDArrayFloat", image)
+    
+        all_centroids = np.array(
+            [contour_centroid(swatch) for swatch in segmentation_data.swatches]
+        )
+    
+        clustered_centroids = []
+        for cluster in segmentation_data.clusters:
+            mask = np.array(
+                [
+                    cv2.pointPolygonTest(cluster, tuple(centroid), False) == 1
+                    for centroid in all_centroids
+                ]
+            )
+            centroids_in_cluster = all_centroids[mask] if np.any(mask) else np.array([])
+            clustered_centroids.append(centroids_in_cluster)
+    
+        nr_expected_swatches = len(template.swatch_centroids)
+        filtered_centroids = [
+            as_int32_array(centroids)
+            for centroids in clustered_centroids
+            if nr_expected_swatches / 3 <= len(centroids) <= nr_expected_swatches
+        ]
+    
+        clustered_centroids = filtered_centroids or []
+    
+        ordered_clustered_centroids = []
+    
+        for centroids in clustered_centroids:
+            if len(centroids) < 4:
+                ordered_clustered_centroids.append(centroids)
+                continue
+    
+            cluster_centroid = np.mean(centroids, axis=0)
+    
+            angles = np.array(
+                [
+                    np.arctan2(pt[1] - cluster_centroid[1], pt[0] - cluster_centroid[0])
+                    for pt in centroids
+                ]
+            )
+    
+            quadrant_points = [[] for _ in range(4)]
+    
+            for i, angle in enumerate(angles):
+                quadrant = int((angle + np.pi) / (np.pi / 2)) % 4
+                quadrant_points[quadrant].append((i, centroids[i]))
+    
+            ordered_points = []
+            for quadrant in quadrant_points:
+                if quadrant:
+                    furthest_idx = max(
+                        quadrant,
+                        key=lambda x: float(np.linalg.norm(x[1] - cluster_centroid)),
+                    )[0]
+                    ordered_points.append(centroids[furthest_idx])
+    
+            if len(ordered_points) != 4:
+                ordered_points = centroids[:4] if len(centroids) >= 4 else centroids
+    
+            ordered_clustered_centroids.append(np.array(ordered_points))
+    
+        starting_pts = ordered_clustered_centroids
+    
+        warping_data = [
+            WarpingData(cluster_id) for cluster_id in range(len(clustered_centroids))
+        ]
+        best_global_cost = np.inf
+    
+        for cluster_id, (cluster, cluster_pts) in enumerate(
+            zip(clustered_centroids, starting_pts, strict=False)
+        ):
+            if best_global_cost < settings.transformation_cost_threshold:
+                break
+    
+            for correspondence in template.correspondences:
+                transformation = cv2.getPerspectiveTransform(
+                    cluster_pts.astype(np.float32),
+                    template.swatch_centroids[list(correspondence)].astype(np.float32),
+                )
+                warped_pts = cv2.perspectiveTransform(
+                    cluster[None, :, :].astype(np.float32), transformation
+                ).reshape(-1, 2)
+    
+                cost_matrix = distance_matrix(warped_pts, template.swatch_centroids)
+                row_id, col_id = linear_sum_assignment(cost_matrix)  # pyright: ignore
+                cost = float(np.sum(cost_matrix[row_id, col_id]) / len(cluster))
+    
+                if cost < warping_data[cluster_id].cost:
+                    warping_data[cluster_id].cost = cost
+                    warping_data[cluster_id].transformation = transformation
+    
+                    best_global_cost = min(best_global_cost, cost)
+    
+                    if cost < settings.transformation_cost_threshold:
+                        break
+    
+>       best_warping_data = min(warping_data, key=lambda x: x.cost)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ValueError: min() arg is an empty sequence
+
+colour_checker_detection\detection\templated.py:719: ValueError
+============================== warnings summary ===============================
+colour_checker_detection/tests/test_correction_template.py::test_detection_logic_basic
+colour_checker_detection/tests/test_correction_template.py::test_detection_logic_basic
+  G:\colour-checker-detection\.venv\Lib\site-packages\colour\utilities\verbose.py:340: ColourUsageWarning: Colour checker was seemingly flipped, reversing the samples!
+    warn(*args, **kwargs)
+
+colour_checker_detection/tests/test_correction_template.py::test_detection_logic_basic
+  G:\colour-checker-detection\.venv\Lib\site-packages\colour\utilities\verbose.py:340: ColourUsageWarning: Colour accuracy warning: max residual 0.525 exceeds threshold 0.3. The detected colours may be inaccurate. Check if the colour checker is properly lit and not occluded.
+    warn(*args, **kwargs)
+
+colour_checker_detection/tests/test_correction_template.py::test_detection_logic_basic
+  G:\colour-checker-detection\.venv\Lib\site-packages\colour\utilities\verbose.py:340: ColourUsageWarning: Colour accuracy warning: max residual 0.556 exceeds threshold 0.3. The detected colours may be inaccurate. Check if the colour checker is properly lit and not occluded.
+    warn(*args, **kwargs)
+
+colour_checker_detection/tests/test_correction_template.py::test_detection_logic_basic
+  G:\colour-checker-detection\.venv\Lib\site-packages\colour\utilities\verbose.py:340: ColourUsageWarning: Colour accuracy warning: max residual 0.438 exceeds threshold 0.3. The detected colours may be inaccurate. Check if the colour checker is properly lit and not occluded.
+    warn(*args, **kwargs)
+
+colour_checker_detection/tests/test_correction_template.py::test_edge_cases_empty_image
+  G:\colour-checker-detection\.venv\Lib\site-packages\colour\algebra\common.py:763: RuntimeWarning: invalid value encountered in divide
+    return ((a - in_min) / (in_max - in_min)) * (out_max - out_min) + out_min
+
+colour_checker_detection/tests/test_correction_template.py::test_edge_cases_empty_image
+  G:\colour-checker-detection\colour_checker_detection\detection\common.py:635: RuntimeWarning: invalid value encountered in cast
+    ).astype(np.uint8)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+============================= slowest 5 durations =============================
+73.67s call     colour_checker_detection/tests/test_correction_template.py::test_detection_logic_basic
+1.29s setup    colour_checker_detection/tests/test_correction_template.py::test_imports_and_dependencies
+0.73s call     colour_checker_detection/tests/test_correction_template.py::test_edge_cases_empty_image
+0.01s call     colour_checker_detection/tests/test_correction_template.py::test_edge_cases_none_input
+0.01s call     colour_checker_detection/tests/test_correction_template.py::test_imports_and_dependencies
+=========================== short test summary info ===========================
+FAILED colour_checker_detection/tests/test_correction_template.py::test_edge_cases_empty_image
+============= 1 failed, 3 passed, 7 warnings in 79.35s (0:01:19) ==============

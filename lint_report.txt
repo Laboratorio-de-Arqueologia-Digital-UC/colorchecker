@@ -1,0 +1,2649 @@
+ANN001 Missing type annotation for function argument `is_vertical`
+  --> colour_checker_detection\correction_swatches.py:48:46
+   |
+47 | def get_dynamic_swatch_centers(
+48 |     working_width: int, working_height: int, is_vertical=False
+   |                                              ^^^^^^^^^^^
+49 | ) -> np.ndarray:
+50 |     """
+   |
+
+PERF401 Use `list.extend` to create a transformed list
+  --> colour_checker_detection\correction_swatches.py:72:13
+   |
+70 |     for y in ys:
+71 |         for x in xs:
+72 |             centers.append([x, y])
+   |             ^^^^^^^^^^^^^^^^^^^^^^
+73 |     return np.array(centers, dtype=np.float32)  # (24, 2)
+   |
+help: Replace for loop with list.extend
+
+ANN202 Missing return type annotation for private function `read_raw_high_res`
+  --> colour_checker_detection\correction_swatches.py:76:5
+   |
+76 | def read_raw_high_res(path: Path, brightness: float = 1.5, linear: bool = False):
+   |     ^^^^^^^^^^^^^^^^^
+77 |     """Lectura de RAW: Visual (sRGB) o Lineal (Camera Space)"""
+78 |     from colour.utilities import as_float_array
+   |
+help: Add return type annotation
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\correction_swatches.py:78:5
+   |
+76 | def read_raw_high_res(path: Path, brightness: float = 1.5, linear: bool = False):
+77 |     """Lectura de RAW: Visual (sRGB) o Lineal (Camera Space)"""
+78 |     from colour.utilities import as_float_array
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+79 |
+80 |     if not path.exists():
+   |
+
+EM102 Exception must not use an f-string literal, assign to variable first
+  --> colour_checker_detection\correction_swatches.py:81:33
+   |
+80 |     if not path.exists():
+81 |         raise FileNotFoundError(f"{path} no existe")
+   |                                 ^^^^^^^^^^^^^^^^^^^
+82 |
+83 |     with rawpy.imread(str(path)) as raw:
+   |
+help: Assign to variable; remove f-string literal
+
+ANN201 Missing return type annotation for public function `main`
+   --> colour_checker_detection\correction_swatches.py:101:5
+    |
+101 | def main(images_dir: Path | None = None, output_dir: Path | None = None):
+    |     ^^^^
+102 |     # 1. Configuración
+103 |     if images_dir is None:
+    |
+help: Add return type annotation: `None`
+
+D103 Missing docstring in public function
+   --> colour_checker_detection\correction_swatches.py:101:5
+    |
+101 | def main(images_dir: Path | None = None, output_dir: Path | None = None):
+    |     ^^^^
+102 |     # 1. Configuración
+103 |     if images_dir is None:
+    |
+
+DTZ005 `datetime.datetime.now()` called without a `tz` argument
+   --> colour_checker_detection\correction_swatches.py:120:21
+    |
+118 |     if output_dir is None:
+119 |         base_dir = Path("G:/colour-checker-detection")
+120 |         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    |                     ^^^^^^^^^^^^^^
+121 |         # User Request: Save to test_results
+122 |         output_dir = base_dir / "colour_checker_detection" / "test_results" / timestamp
+    |
+help: Pass a `datetime.timezone` object to the `tz` parameter
+
+ANN202 Missing return type annotation for private function `process_image`
+   --> colour_checker_detection\correction_swatches.py:126:5
+    |
+126 | def process_image(img_path: Path, output_dir: Path | None = None):
+    |     ^^^^^^^^^^^^^
+127 |     """Procesa una imagen individual y retorna resultados para testing."""
+128 |     LOGGER.info("=== PROCESANDO IMAGEN: %s ===", img_path.name)
+    |
+help: Add return type annotation
+
+BLE001 Do not catch blind exception: `Exception`
+   --> colour_checker_detection\correction_swatches.py:134:12
+    |
+132 |     try:
+133 |         img_srgb = read_raw_high_res(img_path, brightness=1.5, linear=False)
+134 |     except Exception as e:
+    |            ^^^^^^^^^
+135 |         LOGGER.error(f"Error leyendo imagen {img_path}: {e}")
+136 |         return None
+    |
+
+TRY400 Use `logging.exception` instead of `logging.error`
+   --> colour_checker_detection\correction_swatches.py:135:9
+    |
+133 |         img_srgb = read_raw_high_res(img_path, brightness=1.5, linear=False)
+134 |     except Exception as e:
+135 |         LOGGER.error(f"Error leyendo imagen {img_path}: {e}")
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+136 |         return None
+    |
+help: Replace with `exception`
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\correction_swatches.py:135:22
+    |
+133 |         img_srgb = read_raw_high_res(img_path, brightness=1.5, linear=False)
+134 |     except Exception as e:
+135 |         LOGGER.error(f"Error leyendo imagen {img_path}: {e}")
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+136 |         return None
+    |
+help: Convert to lazy `%` formatting
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\correction_swatches.py:159:21
+    |
+157 |     all_detections = {}
+158 |     for name, detection_func in methods_to_try.items():
+159 |         LOGGER.info(f"Ejecutando Detección por {name.upper()}...")
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+160 |         try:
+161 |             det_res = detection_func(
+    |
+help: Convert to lazy `%` formatting
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\correction_swatches.py:170:29
+    |
+168 |             if det_res:
+169 |                 all_detections[name] = det_res[0]
+170 |                 LOGGER.info(f"   {name}: Detectado con éxito.")
+    |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+171 |             else:
+172 |                 LOGGER.warning(f"   {name}: No se encontró nada.")
+    |
+help: Convert to lazy `%` formatting
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\correction_swatches.py:172:32
+    |
+170 |                 LOGGER.info(f"   {name}: Detectado con éxito.")
+171 |             else:
+172 |                 LOGGER.warning(f"   {name}: No se encontró nada.")
+    |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+173 |         except Exception as e:
+174 |             LOGGER.warning(f"   {name}: Error -> {e}")
+    |
+help: Convert to lazy `%` formatting
+
+BLE001 Do not catch blind exception: `Exception`
+   --> colour_checker_detection\correction_swatches.py:173:16
+    |
+171 |             else:
+172 |                 LOGGER.warning(f"   {name}: No se encontró nada.")
+173 |         except Exception as e:
+    |                ^^^^^^^^^
+174 |             LOGGER.warning(f"   {name}: Error -> {e}")
+    |
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\correction_swatches.py:174:28
+    |
+172 |                 LOGGER.warning(f"   {name}: No se encontró nada.")
+173 |         except Exception as e:
+174 |             LOGGER.warning(f"   {name}: Error -> {e}")
+    |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+175 |
+176 |     if not all_detections:
+    |
+help: Convert to lazy `%` formatting
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\correction_swatches.py:211:21
+    |
+209 |     # 5. Procesamiento por cada método detectado
+210 |     for method_name, det in all_detections.items():
+211 |         LOGGER.info(f"Procesando Extracción para: {method_name}")
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+212 |
+213 |         # Iniciando Extracción Lineal
+    |
+help: Convert to lazy `%` formatting
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\correction_swatches.py:218:21
+    |
+216 |             img_linear = cv2.rotate(img_linear, cv2.ROTATE_90_CLOCKWISE)
+217 |
+218 |         LOGGER.info(f"  [{method_name}] Optimizando Orientación...")
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+219 |         visual_data = sample_colour_checker(
+220 |             img_srgb, det.quadrilateral, rect_canon, samples=32, **settings
+    |
+help: Convert to lazy `%` formatting
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\correction_swatches.py:238:17
+    |
+236 |             # --- CÁLCULO DE CCM --- (Required for testing)
+237 |             LOGGER.info(
+238 |                 f"    [{method_name}] Calculando Corrección de Color (Cheung 2004)..."
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+239 |             )
+240 |             # colour.colour_correction usually returns corrected swatches.
+    |
+help: Convert to lazy `%` formatting
+
+E501 Line too long (99 > 88)
+   --> colour_checker_detection\correction_swatches.py:241:89
+    |
+239 |             )
+240 |             # colour.colour_correction usually returns corrected swatches.
+241 |             # To get the CCM itself using colour library is tricky as `colour_correction` wraps it.
+    |                                                                                         ^^^^^^^^^^^
+242 |             # But the user asked to verify "Que la matriz CCM sea 3x3".
+243 |             # The function `colour.colour_correction` doesn't return matrix.
+    |
+
+E501 Line too long (123 > 88)
+   --> colour_checker_detection\correction_swatches.py:244:89
+    |
+242 |             # But the user asked to verify "Que la matriz CCM sea 3x3".
+243 |             # The function `colour.colour_correction` doesn't return matrix.
+244 |             # However, `colour.characterisation.matrix_colour_correction_Cheung2004` DOES return it if we call it directly,
+    |                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+245 |             # OR we can assume if the output is correct, the internal matrix was 3x3.
+246 |             # BUT the requirement is explicit: "Que la matriz CCM sea 3x3".
+    |
+
+E501 Line too long (129 > 88)
+   --> colour_checker_detection\correction_swatches.py:248:89
+    |
+246 |             # BUT the requirement is explicit: "Que la matriz CCM sea 3x3".
+247 |             # I should verify if I can extract it.
+248 |             # `colour.colour_correction` implementation calls `colour.matrix_colour_correction_Cheung2004` (swatches -> swatches)
+    |                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+249 |             # or uses `CCM` if we used fitting.
+250 |             # Let's perform fitting explicitly to get the CCM for the test report.
+    |
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\correction_swatches.py:288:17
+    |
+286 |             max_de = np.max(de00)
+287 |             LOGGER.info(
+288 |                 f"    [{method_name}] Delta E 2000: Promedio={avg_de:.2f}, Max={max_de:.2f}"
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+289 |             )
+    |
+help: Convert to lazy `%` formatting
+
+E501 Line too long (92 > 88)
+   --> colour_checker_detection\correction_swatches.py:288:89
+    |
+286 |             max_de = np.max(de00)
+287 |             LOGGER.info(
+288 |                 f"    [{method_name}] Delta E 2000: Promedio={avg_de:.2f}, Max={max_de:.2f}"
+    |                                                                                         ^^^^
+289 |             )
+    |
+
+PLC0415 `import` should be at the top-level of a file
+   --> colour_checker_detection\correction_swatches.py:311:21
+    |
+309 |                         [[0, 0], [w, 0], [w, h], [0, h]], dtype=np.float32
+310 |                     )
+311 |                     from colour_checker_detection.detection.common import swatch_masks
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+312 |
+313 |                     masks = swatch_masks(w, h, 6, 4, samples=32)
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> colour_checker_detection\correction_swatches.py:347:24
+    |
+345 |                             va="bottom",
+346 |                         )
+347 |                 except Exception as e:
+    |                        ^^^^^^^^^
+348 |                     LOGGER.warning("Visual projection failed: %s", e)
+349 |                 ax0.axis("off")
+    |
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\correction_swatches.py:403:21
+    |
+401 |                 ax5 = fig.add_subplot(gs[1, 2])
+402 |                 LOGGER.info(
+403 |                     f"    [{method_name}] Generando vista previa de imagen corregida..."
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+404 |                 )
+405 |                 # Apply CCM explicitly
+    |
+help: Convert to lazy `%` formatting
+
+E501 Line too long (116 > 88)
+   --> colour_checker_detection\correction_swatches.py:406:89
+    |
+404 |                 )
+405 |                 # Apply CCM explicitly
+406 |                 # img_corrected_full = colour.colour_correction(..., method='Cheung 2004') calls fitting internally?
+    |                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+407 |                 # Using vecmul is safer as we calculated CCM
+408 |                 img_corrected_full = colour.algebra.vecmul(CCM, img_linear)
+    |
+
+ANN201 Missing return type annotation for public function `main`
+   --> colour_checker_detection\correction_swatches.py:426:5
+    |
+426 | def main(images_dir: Path | None = None, output_dir: Path | None = None):
+    |     ^^^^
+427 |     # 1. Configuración
+428 |     if images_dir is None:
+    |
+help: Add return type annotation: `None`
+
+D103 Missing docstring in public function
+   --> colour_checker_detection\correction_swatches.py:426:5
+    |
+426 | def main(images_dir: Path | None = None, output_dir: Path | None = None):
+    |     ^^^^
+427 |     # 1. Configuración
+428 |     if images_dir is None:
+    |
+
+F811 Redefinition of unused `main` from line 101
+   --> colour_checker_detection\correction_swatches.py:426:5
+    |
+426 | def main(images_dir: Path | None = None, output_dir: Path | None = None):
+    |     ^^^^ `main` redefined here
+427 |     # 1. Configuración
+428 |     if images_dir is None:
+    |
+   ::: colour_checker_detection\correction_swatches.py:101:5
+    |
+101 | def main(images_dir: Path | None = None, output_dir: Path | None = None):
+    |     ---- previous definition of `main` here
+102 |     # 1. Configuración
+103 |     if images_dir is None:
+    |
+help: Remove definition: `main`
+
+DTZ005 `datetime.datetime.now()` called without a `tz` argument
+   --> colour_checker_detection\correction_swatches.py:445:21
+    |
+443 |     if output_dir is None:
+444 |         base_dir = Path("G:/colour-checker-detection")
+445 |         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    |                     ^^^^^^^^^^^^^^
+446 |         output_dir = base_dir / "colour_checker_detection" / "test_results" / timestamp
+447 |     output_dir.mkdir(parents=True, exist_ok=True)
+    |
+help: Pass a `datetime.timezone` object to the `tz` parameter
+
+ANN201 Missing return type annotation for public function `read_raw_high_res`
+  --> colour_checker_detection\correction_swatches_benchmark.py:50:5
+   |
+50 | def read_raw_high_res(path: Path, brightness: float = 1.5, linear: bool = False):
+   |     ^^^^^^^^^^^^^^^^^
+51 |     """Lectura de RAW: Visual (sRGB) o Lineal (Camera Space)"""
+52 |     if not path.exists():
+   |
+help: Add return type annotation
+
+EM102 Exception must not use an f-string literal, assign to variable first
+  --> colour_checker_detection\correction_swatches_benchmark.py:53:33
+   |
+51 |     """Lectura de RAW: Visual (sRGB) o Lineal (Camera Space)"""
+52 |     if not path.exists():
+53 |         raise FileNotFoundError(f"{path} no existe")
+   |                                 ^^^^^^^^^^^^^^^^^^^
+54 |
+55 |     with rawpy.imread(str(path)) as raw:
+   |
+help: Assign to variable; remove f-string literal
+
+ANN201 Missing return type annotation for public function `calculate_centroid`
+  --> colour_checker_detection\correction_swatches_benchmark.py:73:5
+   |
+73 | def calculate_centroid(quad):
+   |     ^^^^^^^^^^^^^^^^^^
+74 |     """Calcula el centroide de un cuadrilarero (4, 2)"""
+75 |     return np.mean(quad, axis=0)
+   |
+help: Add return type annotation
+
+ANN001 Missing type annotation for function argument `quad`
+  --> colour_checker_detection\correction_swatches_benchmark.py:73:24
+   |
+73 | def calculate_centroid(quad):
+   |                        ^^^^
+74 |     """Calcula el centroide de un cuadrilarero (4, 2)"""
+75 |     return np.mean(quad, axis=0)
+   |
+
+ANN201 Missing return type annotation for public function `main`
+  --> colour_checker_detection\correction_swatches_benchmark.py:78:5
+   |
+78 | def main(images_dir: Path | None = None):
+   |     ^^^^
+79 |     if images_dir is None:
+80 |         base_dir = Path("G:/colour-checker-detection")
+   |
+help: Add return type annotation: `None`
+
+D103 Missing docstring in public function
+  --> colour_checker_detection\correction_swatches_benchmark.py:78:5
+   |
+78 | def main(images_dir: Path | None = None):
+   |     ^^^^
+79 |     if images_dir is None:
+80 |         base_dir = Path("G:/colour-checker-detection")
+   |
+
+ANN201 Missing return type annotation for public function `run_benchmark_analysis`
+  --> colour_checker_detection\correction_swatches_benchmark.py:84:5
+   |
+84 | def run_benchmark_analysis(images_dir: Path):
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+85 |     """Ejecuta el benchmark y retorna datos estructurados."""
+86 |     img_files = (
+   |
+help: Add return type annotation
+
+BLE001 Do not catch blind exception: `Exception`
+   --> colour_checker_detection\correction_swatches_benchmark.py:299:20
+    |
+297 |                         )
+298 |
+299 |             except Exception as e:
+    |                    ^^^^^^^^^
+300 |                 LOGGER.error(f"Error extracting {img_path.name}: {e}")
+    |
+
+TRY400 Use `logging.exception` instead of `logging.error`
+   --> colour_checker_detection\correction_swatches_benchmark.py:300:17
+    |
+299 |             except Exception as e:
+300 |                 LOGGER.error(f"Error extracting {img_path.name}: {e}")
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+301 |
+302 |     # Statistical Significance
+    |
+help: Replace with `exception`
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\correction_swatches_benchmark.py:300:30
+    |
+299 |             except Exception as e:
+300 |                 LOGGER.error(f"Error extracting {img_path.name}: {e}")
+    |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+301 |
+302 |     # Statistical Significance
+    |
+help: Convert to lazy `%` formatting
+
+PLC0415 `import` should be at the top-level of a file
+   --> colour_checker_detection\correction_swatches_benchmark.py:305:9
+    |
+303 |     stats_res = {}
+304 |     if seg_rgb_all and temp_rgb_all:
+305 |         from scipy import stats as st
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+306 |
+307 |         seg_flat = np.array(seg_rgb_all).flatten()
+    |
+
+ANN201 Missing return type annotation for public function `main`
+   --> colour_checker_detection\correction_swatches_benchmark.py:320:5
+    |
+320 | def main(images_dir: Path | None = None):
+    |     ^^^^
+321 |     if images_dir is None:
+322 |         base_dir = Path("G:/colour-checker-detection")
+    |
+help: Add return type annotation: `None`
+
+D103 Missing docstring in public function
+   --> colour_checker_detection\correction_swatches_benchmark.py:320:5
+    |
+320 | def main(images_dir: Path | None = None):
+    |     ^^^^
+321 |     if images_dir is None:
+322 |         base_dir = Path("G:/colour-checker-detection")
+    |
+
+F811 Redefinition of unused `main` from line 78
+   --> colour_checker_detection\correction_swatches_benchmark.py:320:5
+    |
+320 | def main(images_dir: Path | None = None):
+    |     ^^^^ `main` redefined here
+321 |     if images_dir is None:
+322 |         base_dir = Path("G:/colour-checker-detection")
+    |
+   ::: colour_checker_detection\correction_swatches_benchmark.py:78:5
+    |
+ 78 | def main(images_dir: Path | None = None):
+    |     ---- previous definition of `main` here
+ 79 |     if images_dir is None:
+ 80 |         base_dir = Path("G:/colour-checker-detection")
+    |
+help: Remove definition: `main`
+
+T201 `print` found
+   --> colour_checker_detection\correction_swatches_benchmark.py:336:5
+    |
+334 |     # --- PRINT TABLES ---
+335 |
+336 |     print("\nValores RGB:")
+    |     ^^^^^
+337 |     print(
+338 |         f"|{'Image':<20} |{'Method':<14} |{'Idx':<4} |{'R, G, B':<30} |{'dE 2000':<8} |"
+    |
+help: Remove `print`
+
+T201 `print` found
+   --> colour_checker_detection\correction_swatches_benchmark.py:337:5
+    |
+336 |     print("\nValores RGB:")
+337 |     print(
+    |     ^^^^^
+338 |         f"|{'Image':<20} |{'Method':<14} |{'Idx':<4} |{'R, G, B':<30} |{'dE 2000':<8} |"
+339 |     )
+    |
+help: Remove `print`
+
+T201 `print` found
+   --> colour_checker_detection\correction_swatches_benchmark.py:340:5
+    |
+338 |         f"|{'Image':<20} |{'Method':<14} |{'Idx':<4} |{'R, G, B':<30} |{'dE 2000':<8} |"
+339 |     )
+340 |     print(f"|{'-' * 20}-|{'-' * 14}-|{'-' * 4}-|{'-' * 30}-|{'-' * 8}-|")
+    |     ^^^^^
+341 |     for row in data_rgb:
+342 |         r, g, b = row["RGB"]
+    |
+help: Remove `print`
+
+T201 `print` found
+   --> colour_checker_detection\correction_swatches_benchmark.py:344:9
+    |
+342 |         r, g, b = row["RGB"]
+343 |         rgb_str = f"{r:.4f}, {g:.4f}, {b:.4f}"
+344 |         print(
+    |         ^^^^^
+345 |             f"|{row['Image']:<20} | {row['Method']:<14} |{row['Idx']:<4} | {rgb_str:<30} | {row['dE 2000']:.4f}|"
+346 |         )
+    |
+help: Remove `print`
+
+E501 Line too long (113 > 88)
+   --> colour_checker_detection\correction_swatches_benchmark.py:345:89
+    |
+343 |         rgb_str = f"{r:.4f}, {g:.4f}, {b:.4f}"
+344 |         print(
+345 |             f"|{row['Image']:<20} | {row['Method']:<14} |{row['Idx']:<4} | {rgb_str:<30} | {row['dE 2000']:.4f}|"
+    |                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^
+346 |         )
+    |
+
+T201 `print` found
+   --> colour_checker_detection\correction_swatches_benchmark.py:348:5
+    |
+346 |         )
+347 |
+348 |     print("\nTiempo:")
+    |     ^^^^^
+349 |     print(f"|{'Image':<20} |{'Method':<14} |{'Time (s)':<10} |")
+350 |     print(f"|{'-' * 20}-|{'-' * 14}-|{'-' * 10}-|")
+    |
+help: Remove `print`
+
+T201 `print` found
+   --> colour_checker_detection\correction_swatches_benchmark.py:349:5
+    |
+348 |     print("\nTiempo:")
+349 |     print(f"|{'Image':<20} |{'Method':<14} |{'Time (s)':<10} |")
+    |     ^^^^^
+350 |     print(f"|{'-' * 20}-|{'-' * 14}-|{'-' * 10}-|")
+351 |     for row in data_time:
+    |
+help: Remove `print`
+
+T201 `print` found
+   --> colour_checker_detection\correction_swatches_benchmark.py:350:5
+    |
+348 |     print("\nTiempo:")
+349 |     print(f"|{'Image':<20} |{'Method':<14} |{'Time (s)':<10} |")
+350 |     print(f"|{'-' * 20}-|{'-' * 14}-|{'-' * 10}-|")
+    |     ^^^^^
+351 |     for row in data_time:
+352 |         print(f"|{row['Image']:<20} | {row['Method']:<14} |{row['Time']:<10.4f} |")
+    |
+help: Remove `print`
+
+T201 `print` found
+   --> colour_checker_detection\correction_swatches_benchmark.py:352:9
+    |
+350 |     print(f"|{'-' * 20}-|{'-' * 14}-|{'-' * 10}-|")
+351 |     for row in data_time:
+352 |         print(f"|{row['Image']:<20} | {row['Method']:<14} |{row['Time']:<10.4f} |")
+    |         ^^^^^
+353 |
+354 |     print("\nComparación por Imagen (Seg vs Temp):")
+    |
+help: Remove `print`
+
+T201 `print` found
+   --> colour_checker_detection\correction_swatches_benchmark.py:354:5
+    |
+352 |         print(f"|{row['Image']:<20} | {row['Method']:<14} |{row['Time']:<10.4f} |")
+353 |
+354 |     print("\nComparación por Imagen (Seg vs Temp):")
+    |     ^^^^^
+355 |     print(f"|{'Image':<20} |{'Mean dE (Diff)':<16} |{'Drift (px)':<12} |")
+356 |     print(f"|{'-' * 20}-|{'-' * 16}-|{'-' * 12}-|")
+    |
+help: Remove `print`
+
+T201 `print` found
+   --> colour_checker_detection\correction_swatches_benchmark.py:355:5
+    |
+354 |     print("\nComparación por Imagen (Seg vs Temp):")
+355 |     print(f"|{'Image':<20} |{'Mean dE (Diff)':<16} |{'Drift (px)':<12} |")
+    |     ^^^^^
+356 |     print(f"|{'-' * 20}-|{'-' * 16}-|{'-' * 12}-|")
+357 |     for row in data_comp:
+    |
+help: Remove `print`
+
+T201 `print` found
+   --> colour_checker_detection\correction_swatches_benchmark.py:356:5
+    |
+354 |     print("\nComparación por Imagen (Seg vs Temp):")
+355 |     print(f"|{'Image':<20} |{'Mean dE (Diff)':<16} |{'Drift (px)':<12} |")
+356 |     print(f"|{'-' * 20}-|{'-' * 16}-|{'-' * 12}-|")
+    |     ^^^^^
+357 |     for row in data_comp:
+358 |         print(
+    |
+help: Remove `print`
+
+T201 `print` found
+   --> colour_checker_detection\correction_swatches_benchmark.py:358:9
+    |
+356 |     print(f"|{'-' * 20}-|{'-' * 16}-|{'-' * 12}-|")
+357 |     for row in data_comp:
+358 |         print(
+    |         ^^^^^
+359 |             f"|{row['Image']:<20} | {row['Mean dE (Seg vs Temp)']:<16.4f} | {row['Drift (px)']:<12.2f} |"
+360 |         )
+    |
+help: Remove `print`
+
+E501 Line too long (105 > 88)
+   --> colour_checker_detection\correction_swatches_benchmark.py:359:89
+    |
+357 |     for row in data_comp:
+358 |         print(
+359 |             f"|{row['Image']:<20} | {row['Mean dE (Seg vs Temp)']:<16.4f} | {row['Drift (px)']:<12.2f} |"
+    |                                                                                         ^^^^^^^^^^^^^^^^^
+360 |         )
+    |
+
+T201 `print` found
+   --> colour_checker_detection\correction_swatches_benchmark.py:367:9
+    |
+365 |         p_val = stats_res["p_val"]
+366 |
+367 |         print("\nSignificancia Estadística (Paired T-Test):")
+    |         ^^^^^
+368 |         print(f"|{'Metric':<20} |{'Value':<20} |")
+369 |         print(f"|{'-' * 20}-|{'-' * 20}-|")
+    |
+help: Remove `print`
+
+T201 `print` found
+   --> colour_checker_detection\correction_swatches_benchmark.py:368:9
+    |
+367 |         print("\nSignificancia Estadística (Paired T-Test):")
+368 |         print(f"|{'Metric':<20} |{'Value':<20} |")
+    |         ^^^^^
+369 |         print(f"|{'-' * 20}-|{'-' * 20}-|")
+370 |         print(f"|{'T-Statistic':<20} | {t_stat:<20.4f} |")
+    |
+help: Remove `print`
+
+T201 `print` found
+   --> colour_checker_detection\correction_swatches_benchmark.py:369:9
+    |
+367 |         print("\nSignificancia Estadística (Paired T-Test):")
+368 |         print(f"|{'Metric':<20} |{'Value':<20} |")
+369 |         print(f"|{'-' * 20}-|{'-' * 20}-|")
+    |         ^^^^^
+370 |         print(f"|{'T-Statistic':<20} | {t_stat:<20.4f} |")
+371 |         print(f"|{'P-Value':<20} | {p_val:<20.4e} |")
+    |
+help: Remove `print`
+
+T201 `print` found
+   --> colour_checker_detection\correction_swatches_benchmark.py:370:9
+    |
+368 |         print(f"|{'Metric':<20} |{'Value':<20} |")
+369 |         print(f"|{'-' * 20}-|{'-' * 20}-|")
+370 |         print(f"|{'T-Statistic':<20} | {t_stat:<20.4f} |")
+    |         ^^^^^
+371 |         print(f"|{'P-Value':<20} | {p_val:<20.4e} |")
+372 |         sig = "YES" if p_val < 0.05 else "NO"
+    |
+help: Remove `print`
+
+T201 `print` found
+   --> colour_checker_detection\correction_swatches_benchmark.py:371:9
+    |
+369 |         print(f"|{'-' * 20}-|{'-' * 20}-|")
+370 |         print(f"|{'T-Statistic':<20} | {t_stat:<20.4f} |")
+371 |         print(f"|{'P-Value':<20} | {p_val:<20.4e} |")
+    |         ^^^^^
+372 |         sig = "YES" if p_val < 0.05 else "NO"
+373 |         print(f"|{'Significant Diff?':<20} | {sig:<20} |")
+    |
+help: Remove `print`
+
+T201 `print` found
+   --> colour_checker_detection\correction_swatches_benchmark.py:373:9
+    |
+371 |         print(f"|{'P-Value':<20} | {p_val:<20.4e} |")
+372 |         sig = "YES" if p_val < 0.05 else "NO"
+373 |         print(f"|{'Significant Diff?':<20} | {sig:<20} |")
+    |         ^^^^^
+    |
+help: Remove `print`
+
+ANN001 Missing type annotation for function argument `is_vertical`
+  --> colour_checker_detection\correction_template.py:47:46
+   |
+46 | def get_dynamic_swatch_centers(
+47 |     working_width: int, working_height: int, is_vertical=False
+   |                                              ^^^^^^^^^^^
+48 | ) -> np.ndarray:
+49 |     """
+   |
+
+PERF401 Use `list.extend` to create a transformed list
+  --> colour_checker_detection\correction_template.py:71:13
+   |
+69 |     for y in ys:
+70 |         for x in xs:
+71 |             centers.append([x, y])
+   |             ^^^^^^^^^^^^^^^^^^^^^^
+72 |     return np.array(centers, dtype=np.float32)  # (24, 2)
+   |
+help: Replace for loop with list.extend
+
+ANN202 Missing return type annotation for private function `read_raw_high_res`
+  --> colour_checker_detection\correction_template.py:75:5
+   |
+75 | def read_raw_high_res(path: Path, brightness: float = 1.5, linear: bool = False):
+   |     ^^^^^^^^^^^^^^^^^
+76 |     """Lectura de RAW: Visual (sRGB) o Lineal (Camera Space)"""
+77 |     from colour.utilities import as_float_array
+   |
+help: Add return type annotation
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\correction_template.py:77:5
+   |
+75 | def read_raw_high_res(path: Path, brightness: float = 1.5, linear: bool = False):
+76 |     """Lectura de RAW: Visual (sRGB) o Lineal (Camera Space)"""
+77 |     from colour.utilities import as_float_array
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+78 |
+79 |     if not path.exists():
+   |
+
+EM102 Exception must not use an f-string literal, assign to variable first
+  --> colour_checker_detection\correction_template.py:80:33
+   |
+79 |     if not path.exists():
+80 |         raise FileNotFoundError(f"{path} no existe")
+   |                                 ^^^^^^^^^^^^^^^^^^^
+81 |
+82 |     with rawpy.imread(str(path)) as raw:
+   |
+help: Assign to variable; remove f-string literal
+
+E402 Module level import not at top of file
+   --> colour_checker_detection\correction_template.py:100:1
+    |
+100 | import json
+    | ^^^^^^^^^^^
+    |
+
+ANN202 Missing return type annotation for private function `get_transf_matrix_and_centers`
+   --> colour_checker_detection\correction_template.py:103:5
+    |
+103 | def get_transf_matrix_and_centers(w, h, quad):
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+104 |     """Calcula la matriz de transformación y los centros reproyectados"""
+105 |     rect_std = np.array([[0, 0], [w, 0], [w, h], [0, h]], dtype=np.float32)
+    |
+help: Add return type annotation
+
+ANN001 Missing type annotation for function argument `w`
+   --> colour_checker_detection\correction_template.py:103:35
+    |
+103 | def get_transf_matrix_and_centers(w, h, quad):
+    |                                   ^
+104 |     """Calcula la matriz de transformación y los centros reproyectados"""
+105 |     rect_std = np.array([[0, 0], [w, 0], [w, h], [0, h]], dtype=np.float32)
+    |
+
+ANN001 Missing type annotation for function argument `h`
+   --> colour_checker_detection\correction_template.py:103:38
+    |
+103 | def get_transf_matrix_and_centers(w, h, quad):
+    |                                      ^
+104 |     """Calcula la matriz de transformación y los centros reproyectados"""
+105 |     rect_std = np.array([[0, 0], [w, 0], [w, h], [0, h]], dtype=np.float32)
+    |
+
+ANN001 Missing type annotation for function argument `quad`
+   --> colour_checker_detection\correction_template.py:103:41
+    |
+103 | def get_transf_matrix_and_centers(w, h, quad):
+    |                                         ^^^^
+104 |     """Calcula la matriz de transformación y los centros reproyectados"""
+105 |     rect_std = np.array([[0, 0], [w, 0], [w, h], [0, h]], dtype=np.float32)
+    |
+
+RET504 Unnecessary assignment to `proj_centers` before `return` statement
+   --> colour_checker_detection\correction_template.py:133:12
+    |
+131 |     # Project back to image
+132 |     proj_centers = cv2.perspectiveTransform(rect_centers, H).reshape(-1, 2)
+133 |     return proj_centers
+    |            ^^^^^^^^^^^^
+    |
+help: Remove unnecessary assignment
+
+ANN201 Missing return type annotation for public function `main`
+   --> colour_checker_detection\correction_template.py:136:5
+    |
+136 | def main(images_dir: Path | None = None, output_dir: Path | None = None):
+    |     ^^^^
+137 |     # 1. Configuración
+138 |     if images_dir is None:
+    |
+help: Add return type annotation: `None`
+
+D103 Missing docstring in public function
+   --> colour_checker_detection\correction_template.py:136:5
+    |
+136 | def main(images_dir: Path | None = None, output_dir: Path | None = None):
+    |     ^^^^
+137 |     # 1. Configuración
+138 |     if images_dir is None:
+    |
+
+DTZ005 `datetime.datetime.now()` called without a `tz` argument
+   --> colour_checker_detection\correction_template.py:155:21
+    |
+153 |     if output_dir is None:
+154 |         base_dir = Path("G:/colour-checker-detection")
+155 |         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    |                     ^^^^^^^^^^^^^^
+156 |         # User Request: Save to test_results
+157 |         output_dir = base_dir / "colour_checker_detection" / "test_results" / timestamp
+    |
+help: Pass a `datetime.timezone` object to the `tz` parameter
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\correction_template.py:186:21
+    |
+185 |         det_found = None
+186 |         LOGGER.info(f"Ejecutando Detección por {method_name.upper()}...")
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+187 |         try:
+188 |             det_res = detection_func(
+    |
+help: Convert to lazy `%` formatting
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\correction_template.py:197:29
+    |
+195 |             if det_res:
+196 |                 det_found = det_res[0]
+197 |                 LOGGER.info(f"   {method_name}: Detectado con éxito.")
+    |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+198 |             else:
+199 |                 LOGGER.warning(f"   {method_name}: No se encontró nada.")
+    |
+help: Convert to lazy `%` formatting
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\correction_template.py:199:32
+    |
+197 |                 LOGGER.info(f"   {method_name}: Detectado con éxito.")
+198 |             else:
+199 |                 LOGGER.warning(f"   {method_name}: No se encontró nada.")
+    |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+200 |                 continue  # Skip if not found
+201 |         except Exception as e:
+    |
+help: Convert to lazy `%` formatting
+
+BLE001 Do not catch blind exception: `Exception`
+   --> colour_checker_detection\correction_template.py:201:16
+    |
+199 |                 LOGGER.warning(f"   {method_name}: No se encontró nada.")
+200 |                 continue  # Skip if not found
+201 |         except Exception as e:
+    |                ^^^^^^^^^
+202 |             LOGGER.warning(f"   {method_name}: Error -> {e}")
+203 |             continue
+    |
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\correction_template.py:202:28
+    |
+200 |                 continue  # Skip if not found
+201 |         except Exception as e:
+202 |             LOGGER.warning(f"   {method_name}: Error -> {e}")
+    |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+203 |             continue
+    |
+help: Convert to lazy `%` formatting
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\correction_template.py:238:21
+    |
+237 |         # 5. Procesamiento
+238 |         LOGGER.info(f"Procesando Extracción para: {method_name}")
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+239 |
+240 |         # Iniciando Extracción Lineal
+    |
+help: Convert to lazy `%` formatting
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\correction_template.py:293:25
+    |
+291 |             avg_de = np.mean(de00)
+292 |             max_de = np.max(de00)
+293 |             LOGGER.info(f"    Delta E 2000: Promedio={avg_de:.2f}, Max={max_de:.2f}")
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+294 |
+295 |             # --- GENERAR DATOS JSON ---
+    |
+help: Convert to lazy `%` formatting
+
+BLE001 Do not catch blind exception: `Exception`
+   --> colour_checker_detection\correction_template.py:327:20
+    |
+325 |                 LOGGER.info("JSON guardado en: %s", json_path)
+326 |
+327 |             except Exception as e:
+    |                    ^^^^^^^^^
+328 |                 LOGGER.error(f"Error generando JSON: {e}")
+    |
+
+TRY400 Use `logging.exception` instead of `logging.error`
+   --> colour_checker_detection\correction_template.py:328:17
+    |
+327 |             except Exception as e:
+328 |                 LOGGER.error(f"Error generando JSON: {e}")
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+329 |
+330 |             # 7. Visualización (Mantenida igual pero usando datos ya calculados)
+    |
+help: Replace with `exception`
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\correction_template.py:328:30
+    |
+327 |             except Exception as e:
+328 |                 LOGGER.error(f"Error generando JSON: {e}")
+    |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+329 |
+330 |             # 7. Visualización (Mantenida igual pero usando datos ya calculados)
+    |
+help: Convert to lazy `%` formatting
+
+PLC0415 `import` should be at the top-level of a file
+   --> colour_checker_detection\detection\__init__.py:166:9
+    |
+164 |         "inferencer_default",
+165 |     ]:
+166 |         import importlib
+    |         ^^^^^^^^^^^^^^^^
+167 |
+168 |         return getattr(importlib.import_module(".inference", __package__), name)
+    |
+
+EM102 Exception must not use an f-string literal, assign to variable first
+   --> colour_checker_detection\detection\__init__.py:170:26
+    |
+168 |         return getattr(importlib.import_module(".inference", __package__), name)
+169 |
+170 |     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: Assign to variable; remove f-string literal
+
+D100 Missing docstring in public module
+--> colour_checker_detection\detection_swatches.py:1:1
+
+ANN001 Missing type annotation for function argument `is_vertical`
+  --> colour_checker_detection\detection_swatches.py:25:46
+   |
+24 | def get_dynamic_swatch_centers(
+25 |     working_width: int, working_height: int, is_vertical=False
+   |                                              ^^^^^^^^^^^
+26 | ) -> np.ndarray:
+27 |     """
+   |
+
+PERF401 Use `list.extend` to create a transformed list
+  --> colour_checker_detection\detection_swatches.py:49:13
+   |
+47 |     for y in ys:
+48 |         for x in xs:
+49 |             centers.append([x, y])
+   |             ^^^^^^^^^^^^^^^^^^^^^^
+50 |     return np.array(centers, dtype=np.float32)  # (24, 2)
+   |
+help: Replace for loop with list.extend
+
+ANN201 Missing return type annotation for public function `read_raw_high_res`
+  --> colour_checker_detection\detection_swatches.py:53:5
+   |
+53 | def read_raw_high_res(path: Path, brightness: float = 1.5, linear: bool = False):
+   |     ^^^^^^^^^^^^^^^^^
+54 |     """Lectura de RAW: Visual (sRGB) o Lineal (Camera Space)"""
+55 |     from colour.utilities import as_float_array
+   |
+help: Add return type annotation
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\detection_swatches.py:55:5
+   |
+53 | def read_raw_high_res(path: Path, brightness: float = 1.5, linear: bool = False):
+54 |     """Lectura de RAW: Visual (sRGB) o Lineal (Camera Space)"""
+55 |     from colour.utilities import as_float_array
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+56 |
+57 |     if not path.exists():
+   |
+
+EM102 Exception must not use an f-string literal, assign to variable first
+  --> colour_checker_detection\detection_swatches.py:58:33
+   |
+57 |     if not path.exists():
+58 |         raise FileNotFoundError(f"{path} no existe")
+   |                                 ^^^^^^^^^^^^^^^^^^^
+59 |
+60 |     with rawpy.imread(str(path)) as raw:
+   |
+help: Assign to variable; remove f-string literal
+
+ANN201 Missing return type annotation for public function `main`
+  --> colour_checker_detection\detection_swatches.py:86:5
+   |
+86 | def main(images_dir: Path | None = None, output_dir: Path | None = None):
+   |     ^^^^
+87 |     # 1. Configuración
+88 |     if images_dir is None:
+   |
+help: Add return type annotation: `None`
+
+D103 Missing docstring in public function
+  --> colour_checker_detection\detection_swatches.py:86:5
+   |
+86 | def main(images_dir: Path | None = None, output_dir: Path | None = None):
+   |     ^^^^
+87 |     # 1. Configuración
+88 |     if images_dir is None:
+   |
+
+DTZ005 `datetime.datetime.now()` called without a `tz` argument
+   --> colour_checker_detection\detection_swatches.py:105:21
+    |
+103 |     if output_dir is None:
+104 |         base_dir = Path("G:/colour-checker-detection")
+105 |         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    |                     ^^^^^^^^^^^^^^
+106 |         # User Request: Save to test_results
+107 |         output_dir = base_dir / "colour_checker_detection" / "test_results" / timestamp
+    |
+help: Pass a `datetime.timezone` object to the `tz` parameter
+
+ANN201 Missing return type annotation for public function `process_image`
+   --> colour_checker_detection\detection_swatches.py:112:5
+    |
+112 | def process_image(img_path: Path, output_dir: Path | None = None):
+    |     ^^^^^^^^^^^^^
+113 |     """Procesa una imagen individual y retorna resultados para testing."""
+114 |     LOGGER.info("=== PROCESANDO IMAGEN: %s ===", img_path.name)
+    |
+help: Add return type annotation
+
+BLE001 Do not catch blind exception: `Exception`
+   --> colour_checker_detection\detection_swatches.py:120:12
+    |
+118 |     try:
+119 |         img_srgb = read_raw_high_res(img_path, brightness=1.5, linear=False)
+120 |     except Exception as e:
+    |            ^^^^^^^^^
+121 |         LOGGER.error(f"Error leyendo imagen {img_path}: {e}")
+122 |         return None
+    |
+
+TRY400 Use `logging.exception` instead of `logging.error`
+   --> colour_checker_detection\detection_swatches.py:121:9
+    |
+119 |         img_srgb = read_raw_high_res(img_path, brightness=1.5, linear=False)
+120 |     except Exception as e:
+121 |         LOGGER.error(f"Error leyendo imagen {img_path}: {e}")
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+122 |         return None
+    |
+help: Replace with `exception`
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\detection_swatches.py:121:22
+    |
+119 |         img_srgb = read_raw_high_res(img_path, brightness=1.5, linear=False)
+120 |     except Exception as e:
+121 |         LOGGER.error(f"Error leyendo imagen {img_path}: {e}")
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+122 |         return None
+    |
+help: Convert to lazy `%` formatting
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\detection_swatches.py:145:21
+    |
+143 |     all_detections = {}
+144 |     for name, detection_func in methods_to_try.items():
+145 |         LOGGER.info(f"Ejecutando Detección por {name.upper()}...")
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+146 |         try:
+147 |             det_res = detection_func(
+    |
+help: Convert to lazy `%` formatting
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\detection_swatches.py:156:29
+    |
+154 |             if det_res:
+155 |                 all_detections[name] = det_res[0]
+156 |                 LOGGER.info(f"   {name}: Detectado con éxito.")
+    |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+157 |             else:
+158 |                 LOGGER.warning(f"   {name}: No se encontró nada.")
+    |
+help: Convert to lazy `%` formatting
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\detection_swatches.py:158:32
+    |
+156 |                 LOGGER.info(f"   {name}: Detectado con éxito.")
+157 |             else:
+158 |                 LOGGER.warning(f"   {name}: No se encontró nada.")
+    |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+159 |         except Exception as e:
+160 |             LOGGER.warning(f"   {name}: Error -> {e}")
+    |
+help: Convert to lazy `%` formatting
+
+BLE001 Do not catch blind exception: `Exception`
+   --> colour_checker_detection\detection_swatches.py:159:16
+    |
+157 |             else:
+158 |                 LOGGER.warning(f"   {name}: No se encontró nada.")
+159 |         except Exception as e:
+    |                ^^^^^^^^^
+160 |             LOGGER.warning(f"   {name}: Error -> {e}")
+    |
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\detection_swatches.py:160:28
+    |
+158 |                 LOGGER.warning(f"   {name}: No se encontró nada.")
+159 |         except Exception as e:
+160 |             LOGGER.warning(f"   {name}: Error -> {e}")
+    |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+161 |
+162 |     if not all_detections:
+    |
+help: Convert to lazy `%` formatting
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\detection_swatches.py:173:21
+    |
+171 |     # 4. Procesamiento por cada método detectado
+172 |     for method_name, det in all_detections.items():
+173 |         LOGGER.info(f"Procesando Extracción para: {method_name}")
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+174 |
+175 |         # Iniciando Extracción Lineal
+    |
+help: Convert to lazy `%` formatting
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\detection_swatches.py:181:21
+    |
+180 |         # a) Optimizar Orientación en sRGB
+181 |         LOGGER.info(f"  [{method_name}] Optimizando Orientación...")
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+182 |         visual_data = sample_colour_checker(
+183 |             img_srgb, det.quadrilateral, rect_canon, samples=32, **settings
+    |
+help: Convert to lazy `%` formatting
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\detection_swatches.py:207:25
+    |
+205 |                     brightest_idx = np.argmax(means)
+206 |                     LOGGER.info(
+207 |                         f"    [{method_name}] B-Idx: {brightest_idx}, White: {np.round(vals[18], 4)}"
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+208 |                     )
+    |
+help: Convert to lazy `%` formatting
+
+E501 Line too long (101 > 88)
+   --> colour_checker_detection\detection_swatches.py:207:89
+    |
+205 |                     brightest_idx = np.argmax(means)
+206 |                     LOGGER.info(
+207 |                         f"    [{method_name}] B-Idx: {brightest_idx}, White: {np.round(vals[18], 4)}"
+    |                                                                                         ^^^^^^^^^^^^^
+208 |                     )
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> colour_checker_detection\detection_swatches.py:250:24
+    |
+249 |                     plt.close(fig)
+250 |                 except Exception as e:
+    |                        ^^^^^^^^^
+251 |                     LOGGER.warning(f"Error en visualización: {e}")
+    |
+
+G004 Logging statement uses f-string
+   --> colour_checker_detection\detection_swatches.py:251:36
+    |
+249 |                     plt.close(fig)
+250 |                 except Exception as e:
+251 |                     LOGGER.warning(f"Error en visualización: {e}")
+    |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+252 |
+253 |     return results
+    |
+help: Convert to lazy `%` formatting
+
+ANN201 Missing return type annotation for public function `main`
+   --> colour_checker_detection\detection_swatches.py:256:5
+    |
+256 | def main(images_dir: Path | None = None, output_dir: Path | None = None):
+    |     ^^^^
+257 |     # 1. Configuración
+258 |     if images_dir is None:
+    |
+help: Add return type annotation: `None`
+
+D103 Missing docstring in public function
+   --> colour_checker_detection\detection_swatches.py:256:5
+    |
+256 | def main(images_dir: Path | None = None, output_dir: Path | None = None):
+    |     ^^^^
+257 |     # 1. Configuración
+258 |     if images_dir is None:
+    |
+
+F811 Redefinition of unused `main` from line 86
+   --> colour_checker_detection\detection_swatches.py:256:5
+    |
+256 | def main(images_dir: Path | None = None, output_dir: Path | None = None):
+    |     ^^^^ `main` redefined here
+257 |     # 1. Configuración
+258 |     if images_dir is None:
+    |
+   ::: colour_checker_detection\detection_swatches.py:86:5
+    |
+ 86 | def main(images_dir: Path | None = None, output_dir: Path | None = None):
+    |     ---- previous definition of `main` here
+ 87 |     # 1. Configuración
+ 88 |     if images_dir is None:
+    |
+help: Remove definition: `main`
+
+DTZ005 `datetime.datetime.now()` called without a `tz` argument
+   --> colour_checker_detection\detection_swatches.py:275:21
+    |
+273 |     if output_dir is None:
+274 |         base_dir = Path("G:/colour-checker-detection")
+275 |         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    |                     ^^^^^^^^^^^^^^
+276 |         output_dir = base_dir / "colour_checker_detection" / "test_results" / timestamp
+    |
+help: Pass a `datetime.timezone` object to the `tz` parameter
+
+TC002 Move third-party import `colour.hints.NDArrayFloat` into a type-checking block
+  --> colour_checker_detection\test.py:31:26
+   |
+30 | # Importaciones de la librería interna
+31 | from colour.hints import NDArrayFloat
+   |                          ^^^^^^^^^^^^
+32 | from colour.utilities import as_float_array
+   |
+help: Move into type-checking block
+
+SIM105 Use `contextlib.suppress(ImportError)` instead of `try`-`except`-`pass`
+  --> colour_checker_detection\test.py:52:1
+   |
+51 |   # Force registration of requirements (Fix for KeyError: 'scikit-learn')
+52 | / try:
+53 | |     import colour_checker_detection.utilities.requirements  # noqa: F401
+54 | | except ImportError:
+55 | |     pass
+   | |________^
+56 |
+57 |   # Configuración de Logging
+   |
+help: Replace `try`-`except`-`pass` with `with contextlib.suppress(ImportError): ...`
+
+RUF013 PEP 484 prohibits implicit `Optional`
+  --> colour_checker_detection\test.py:81:51
+   |
+80 | def adapter_yolo_inferencer(
+81 |     image: NDArrayFloat, model: YOLO, bbox_cache: list = None
+   |                                                   ^^^^
+82 | ) -> list[Any]:
+83 |     """
+   |
+help: Convert to `T | None`
+
+PERF401 Use `list.extend` to create a transformed list
+   --> colour_checker_detection\test.py:98:17
+    |
+ 96 |         if bbox_cache is not None and r.boxes:
+ 97 |             for box in r.boxes:
+ 98 |                 bbox_cache.append(box.xyxy[0].cpu().numpy())
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 99 |
+100 |         if not r.masks:
+    |
+help: Replace for loop with list.extend
+
+PLW2901 `for` loop variable `mask` overwritten by assignment target
+   --> colour_checker_detection\test.py:109:17
+    |
+107 |             # Redimensionar máscara al tamaño original de la imagen si difiere
+108 |             if mask.shape != image.shape[:2]:
+109 |                 mask = cv2.resize(
+    |                 ^^^^
+110 |                     mask,
+111 |                     (image.shape[1], image.shape[0]),
+    |
+
+ANN001 Missing type annotation for function argument `is_vertical`
+   --> colour_checker_detection\test.py:124:46
+    |
+123 | def get_dynamic_swatch_centers(
+124 |     working_width: int, working_height: int, is_vertical=False
+    |                                              ^^^^^^^^^^^
+125 | ) -> np.ndarray:
+126 |     """
+    |
+
+PERF401 Use `list.extend` to create a transformed list
+   --> colour_checker_detection\test.py:148:13
+    |
+146 |     for y in ys:
+147 |         for x in xs:
+148 |             centers.append([x, y])
+    |             ^^^^^^^^^^^^^^^^^^^^^^
+149 |     return np.array(centers, dtype=np.float32)  # (24, 2)
+    |
+help: Replace for loop with list.extend
+
+SIM102 Use a single `if` statement instead of nested `if` statements
+   --> colour_checker_detection\test.py:187:9
+    |
+186 |           # 1. BBox YOLO
+187 | /         if method == "Inferencia" and bbox_cache_inference:
+188 | |             if len(bbox_cache_inference) > 0:
+    | |_____________________________________________^
+189 |                   best_bbox = bbox_cache_inference[0]
+190 |                   x1, y1, x2, y2 = best_bbox
+    |
+help: Combine `if` statements using `and`
+
+E501 Line too long (107 > 88)
+   --> colour_checker_detection\test.py:252:89
+    |
+250 |                 # 3. VISUALIZE SWATCHES (DYNAMC TOPOLOGY CHECK)
+251 |                 try:
+252 |                     # Determinar si el quad detectado es "Vertical" (Alto > Ancho en espacio de proyección)
+    |                                                                                         ^^^^^^^^^^^^^^^^^^^
+253 |                     # Medimos longitudes de lados: Lado 0-1 (Top?), Lado 1-2 (Right?)
+254 |                     # Orden usual de puntos en quad: TL, TR, BR, BL (o similar)
+    |
+
+RUF059 Unpacked variable `p3` is never used
+   --> colour_checker_detection\test.py:255:33
+    |
+253 |                     # Medimos longitudes de lados: Lado 0-1 (Top?), Lado 1-2 (Right?)
+254 |                     # Orden usual de puntos en quad: TL, TR, BR, BL (o similar)
+255 |                     p0, p1, p2, p3 = quad
+    |                                 ^^
+256 |
+257 |                     # Distancias
+    |
+help: Prefix it with an underscore or any other dummy variable pattern
+
+E501 Line too long (98 > 88)
+   --> colour_checker_detection\test.py:265:89
+    |
+263 |                     )  # Segundo lado (asumimos Width/Bottom?)
+264 |
+265 |                     # CORRECCIÓN: La lógica anterior d12 > d01 detectaba Horizontal como Vertical.
+    |                                                                                         ^^^^^^^^^^
+266 |                     # Si asumimos orden TR, BR, BL, TL: d01=Height, d12=Width.
+267 |                     # Vertical implica Height > Width => d01 > d12.
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> colour_checker_detection\test.py:298:24
+    |
+296 |                     )
+297 |
+298 |                 except Exception as e:
+    |                        ^^^^^^^^^
+299 |                     LOGGER.warning("Error proyectando swatches: %s", e)
+    |
+
+D103 Missing docstring in public function
+   --> colour_checker_detection\test.py:305:5
+    |
+305 | def run_benchmark(
+    |     ^^^^^^^^^^^^^
+306 |     model_path: Path,
+307 |     images_dir: Path,
+    |
+
+PLC0415 `import` should be at the top-level of a file
+   --> colour_checker_detection\test.py:312:9
+    |
+310 |     # Check imports debug
+311 |     try:
+312 |         import sklearn  # noqa: F401
+    |         ^^^^^^^^^^^^^^
+313 |     except ImportError:
+314 |         LOGGER.warning(
+    |
+
+E501 Line too long (89 > 88)
+   --> colour_checker_detection\test.py:355:89
+    |
+353 |             if h_native > w_native:
+354 |                 LOGGER.info(
+355 |                     "Imagen Vertical detectada. Rotando -90 grados para procesamiento..."
+    |                                                                                         ^
+356 |                 )
+357 |                 img_processing = cv2.rotate(img_rgb_native, cv2.ROTATE_90_CLOCKWISE)
+    |
+
+F841 Local variable `is_rotated` is assigned to but never used
+   --> colour_checker_detection\test.py:358:17
+    |
+356 |                 )
+357 |                 img_processing = cv2.rotate(img_rgb_native, cv2.ROTATE_90_CLOCKWISE)
+358 |                 is_rotated = True
+    |                 ^^^^^^^^^^
+359 |
+360 |             h_proc, w_proc = img_processing.shape[:2]
+    |
+help: Remove assignment to unused variable `is_rotated`
+
+BLE001 Do not catch blind exception: `Exception`
+   --> colour_checker_detection\test.py:385:20
+    |
+383 |                 LOGGER.info("   Encontrados: %d", len(res_seg))
+384 |                 results["Segmentación"] = res_seg
+385 |             except Exception as e:
+    |                    ^^^^^^^^^
+386 |                 LOGGER.warning("   Fallo en segmentación: %s", e)
+387 |                 results["Segmentación"] = []
+    |
+
+E731 Do not assign a `lambda` expression, use a `def`
+   --> colour_checker_detection\test.py:395:21
+    |
+393 |                       inference_bboxes.clear()
+394 |
+395 | /                     custom_inferencer = lambda img, **kwargs: adapter_yolo_inferencer(
+396 | |                         img, model, inference_bboxes
+397 | |                     )
+    | |_____________________^
+398 |
+399 |                       res_inf = detect_colour_checkers_inference(
+    |
+help: Rewrite `custom_inferencer` as a `def`
+
+ARG005 Unused lambda argument: `kwargs`
+   --> colour_checker_detection\test.py:395:55
+    |
+393 |                     inference_bboxes.clear()
+394 |
+395 |                     custom_inferencer = lambda img, **kwargs: adapter_yolo_inferencer(
+    |                                                       ^^^^^^
+396 |                         img, model, inference_bboxes
+397 |                     )
+    |
+
+B023 Function definition does not bind loop variable `inference_bboxes`
+   --> colour_checker_detection\test.py:396:37
+    |
+395 |                     custom_inferencer = lambda img, **kwargs: adapter_yolo_inferencer(
+396 |                         img, model, inference_bboxes
+    |                                     ^^^^^^^^^^^^^^^^
+397 |                     )
+    |
+
+E501 Line too long (94 > 88)
+   --> colour_checker_detection\test.py:412:89
+    |
+410 |                     if len(res_inf) > 1:
+411 |                         LOGGER.info(
+412 |                             "   Filtrando resultados de inferencia (quedando con el mejor)..."
+    |                                                                                         ^^^^^^
+413 |                         )
+414 |                         res_inf = (res_inf[0],)
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> colour_checker_detection\test.py:419:24
+    |
+418 |                     results["Inferencia"] = res_inf
+419 |                 except Exception as e:
+    |                        ^^^^^^^^^
+420 |                     LOGGER.warning("   Fallo en inferencia: %s", e)
+421 |                     results["Inferencia"] = []
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> colour_checker_detection\test.py:439:20
+    |
+437 |                 LOGGER.info("   Encontrados: %d", len(res_tpl))
+438 |                 results["Plantillas"] = res_tpl
+439 |             except Exception as e:
+    |                    ^^^^^^^^^
+440 |                 LOGGER.warning(
+441 |                     "   Fallo en plantillas: %s (Tipo: %s)", e, type(e).__name__
+    |
+
+INP001 File `colour_checker_detection\tests\test_correction_swatches.py` is part of an implicit namespace package. Add an `__init__.py`.
+--> colour_checker_detection\tests\test_correction_swatches.py:1:1
+
+ANN201 Missing return type annotation for public function `test_imports_and_dependencies`
+  --> colour_checker_detection\tests\test_correction_swatches.py:16:5
+   |
+16 | def test_imports_and_dependencies():
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+17 |     """✅ Imports y dependencias"""
+18 |     try:
+   |
+help: Add return type annotation: `None`
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_correction_swatches.py:19:9
+   |
+17 |     """✅ Imports y dependencias"""
+18 |     try:
+19 |         from colour_checker_detection.correction_swatches import process_image
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+20 |         import colour
+21 |     except ImportError as e:
+   |
+
+F401 `colour_checker_detection.correction_swatches.process_image` imported but unused; consider using `importlib.util.find_spec` to test for availability
+  --> colour_checker_detection\tests\test_correction_swatches.py:19:66
+   |
+17 |     """✅ Imports y dependencias"""
+18 |     try:
+19 |         from colour_checker_detection.correction_swatches import process_image
+   |                                                                  ^^^^^^^^^^^^^
+20 |         import colour
+21 |     except ImportError as e:
+   |
+help: Remove unused import: `colour_checker_detection.correction_swatches.process_image`
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_correction_swatches.py:20:9
+   |
+18 |     try:
+19 |         from colour_checker_detection.correction_swatches import process_image
+20 |         import colour
+   |         ^^^^^^^^^^^^^
+21 |     except ImportError as e:
+22 |         pytest.fail(f"Missing dependency: {e}")
+   |
+
+F401 `colour` imported but unused; consider using `importlib.util.find_spec` to test for availability
+  --> colour_checker_detection\tests\test_correction_swatches.py:20:16
+   |
+18 |     try:
+19 |         from colour_checker_detection.correction_swatches import process_image
+20 |         import colour
+   |                ^^^^^^
+21 |     except ImportError as e:
+22 |         pytest.fail(f"Missing dependency: {e}")
+   |
+help: Remove unused import: `colour`
+
+ANN201 Missing return type annotation for public function `test_pipeline_and_ccm`
+  --> colour_checker_detection\tests\test_correction_swatches.py:25:5
+   |
+25 | def test_pipeline_and_ccm(tmp_path):
+   |     ^^^^^^^^^^^^^^^^^^^^^
+26 |     """✅ Pipeline end-to-end y ✅ Cálculo CCM"""
+27 |     from colour_checker_detection.correction_swatches import process_image
+   |
+help: Add return type annotation: `None`
+
+ANN001 Missing type annotation for function argument `tmp_path`
+  --> colour_checker_detection\tests\test_correction_swatches.py:25:27
+   |
+25 | def test_pipeline_and_ccm(tmp_path):
+   |                           ^^^^^^^^
+26 |     """✅ Pipeline end-to-end y ✅ Cálculo CCM"""
+27 |     from colour_checker_detection.correction_swatches import process_image
+   |
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_correction_swatches.py:27:5
+   |
+25 | def test_pipeline_and_ccm(tmp_path):
+26 |     """✅ Pipeline end-to-end y ✅ Cálculo CCM"""
+27 |     from colour_checker_detection.correction_swatches import process_image
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+28 |
+29 |     base_dir = Path("G:/colour-checker-detection/colour_checker_detection")
+   |
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_correction_swatches.py:45:5
+   |
+44 |     # Mock plt
+45 |     import matplotlib.pyplot as plt
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+46 |
+47 |     with pytest.MonkeyPatch.context() as m:
+   |
+
+E501 Line too long (98 > 88)
+  --> colour_checker_detection\tests\test_correction_swatches.py:64:88
+   |
+62 |         assert np.isfinite(ccm).all()
+63 |
+64 |         # ✅ Que CCM aplicada preserve rangos de color (checked indirectly via corrected swatches)
+   |                                                                                         ^^^^^^^^^^
+65 |         swatches_measured = data["swatches_measured"]
+66 |         swatches_corrected = data["swatches_corrected"]
+   |
+
+F841 Local variable `swatches_measured` is assigned to but never used
+  --> colour_checker_detection\tests\test_correction_swatches.py:65:9
+   |
+64 |         # ✅ Que CCM aplicada preserve rangos de color (checked indirectly via corrected swatches)
+65 |         swatches_measured = data["swatches_measured"]
+   |         ^^^^^^^^^^^^^^^^^
+66 |         swatches_corrected = data["swatches_corrected"]
+   |
+help: Remove assignment to unused variable `swatches_measured`
+
+ANN201 Missing return type annotation for public function `test_edge_case_invalid_image`
+  --> colour_checker_detection\tests\test_correction_swatches.py:97:5
+   |
+97 | def test_edge_case_invalid_image():
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+98 |     """✅ Edge cases: Imagen corrupta o inválida"""
+99 |     from colour_checker_detection.correction_swatches import process_image
+   |
+help: Add return type annotation: `None`
+
+PLC0415 `import` should be at the top-level of a file
+   --> colour_checker_detection\tests\test_correction_swatches.py:99:5
+    |
+ 97 | def test_edge_case_invalid_image():
+ 98 |     """✅ Edge cases: Imagen corrupta o inválida"""
+ 99 |     from colour_checker_detection.correction_swatches import process_image
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+100 |
+101 |     # Passing a non-raw file or non-existent
+    |
+
+INP001 File `colour_checker_detection\tests\test_correction_swatches_benchmark.py` is part of an implicit namespace package. Add an `__init__.py`.
+--> colour_checker_detection\tests\test_correction_swatches_benchmark.py:1:1
+
+ANN201 Missing return type annotation for public function `test_imports_and_dependencies`
+  --> colour_checker_detection\tests\test_correction_swatches_benchmark.py:14:5
+   |
+14 | def test_imports_and_dependencies():
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+15 |     """✅ Imports y dependencias"""
+16 |     try:
+   |
+help: Add return type annotation: `None`
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_correction_swatches_benchmark.py:17:9
+   |
+15 |       """✅ Imports y dependencias"""
+16 |       try:
+17 | /         from colour_checker_detection.correction_swatches_benchmark import (
+18 | |             run_benchmark_analysis,
+19 | |             main,
+20 | |         )
+   | |_________^
+21 |       except ImportError as e:
+22 |           pytest.fail(f"Missing dependency: {e}")
+   |
+
+F401 `colour_checker_detection.correction_swatches_benchmark.run_benchmark_analysis` imported but unused; consider using `importlib.util.find_spec` to test for availability
+  --> colour_checker_detection\tests\test_correction_swatches_benchmark.py:18:13
+   |
+16 |     try:
+17 |         from colour_checker_detection.correction_swatches_benchmark import (
+18 |             run_benchmark_analysis,
+   |             ^^^^^^^^^^^^^^^^^^^^^^
+19 |             main,
+20 |         )
+   |
+help: Remove unused import
+
+F401 `colour_checker_detection.correction_swatches_benchmark.main` imported but unused; consider using `importlib.util.find_spec` to test for availability
+  --> colour_checker_detection\tests\test_correction_swatches_benchmark.py:19:13
+   |
+17 |         from colour_checker_detection.correction_swatches_benchmark import (
+18 |             run_benchmark_analysis,
+19 |             main,
+   |             ^^^^
+20 |         )
+21 |     except ImportError as e:
+   |
+help: Remove unused import
+
+ANN201 Missing return type annotation for public function `test_analysis_logic`
+  --> colour_checker_detection\tests\test_correction_swatches_benchmark.py:25:5
+   |
+25 | def test_analysis_logic(tmp_path):
+   |     ^^^^^^^^^^^^^^^^^^^
+26 |     """✅ Comparación de métodos y ✅ Estadísticas"""
+27 |     from colour_checker_detection.correction_swatches_benchmark import (
+   |
+help: Add return type annotation: `None`
+
+ANN001 Missing type annotation for function argument `tmp_path`
+  --> colour_checker_detection\tests\test_correction_swatches_benchmark.py:25:25
+   |
+25 | def test_analysis_logic(tmp_path):
+   |                         ^^^^^^^^
+26 |     """✅ Comparación de métodos y ✅ Estadísticas"""
+27 |     from colour_checker_detection.correction_swatches_benchmark import (
+   |
+
+ARG001 Unused function argument: `tmp_path`
+  --> colour_checker_detection\tests\test_correction_swatches_benchmark.py:25:25
+   |
+25 | def test_analysis_logic(tmp_path):
+   |                         ^^^^^^^^
+26 |     """✅ Comparación de métodos y ✅ Estadísticas"""
+27 |     from colour_checker_detection.correction_swatches_benchmark import (
+   |
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_correction_swatches_benchmark.py:27:5
+   |
+25 |   def test_analysis_logic(tmp_path):
+26 |       """✅ Comparación de métodos y ✅ Estadísticas"""
+27 | /     from colour_checker_detection.correction_swatches_benchmark import (
+28 | |         run_benchmark_analysis,
+29 | |     )
+   | |_____^
+30 |
+31 |       base_dir = Path("G:/colour-checker-detection/colour_checker_detection")
+   |
+
+E501 Line too long (113 > 88)
+  --> colour_checker_detection\tests\test_correction_swatches_benchmark.py:48:89
+   |
+46 |     assert len(data_rgb) > 0
+47 |     assert len(data_time) > 0
+48 |     # Comparison might be empty if only one method detects things, but we expect both to work on standard images.
+   |                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^
+49 |     assert len(data_comp) > 0
+   |
+
+ANN201 Missing return type annotation for public function `test_main_execution`
+  --> colour_checker_detection\tests\test_correction_swatches_benchmark.py:70:5
+   |
+70 | def test_main_execution(capsys):
+   |     ^^^^^^^^^^^^^^^^^^^
+71 |     """✅ Output de tablas (stdout)"""
+72 |     from colour_checker_detection.correction_swatches_benchmark import main
+   |
+help: Add return type annotation: `None`
+
+ANN001 Missing type annotation for function argument `capsys`
+  --> colour_checker_detection\tests\test_correction_swatches_benchmark.py:70:25
+   |
+70 | def test_main_execution(capsys):
+   |                         ^^^^^^
+71 |     """✅ Output de tablas (stdout)"""
+72 |     from colour_checker_detection.correction_swatches_benchmark import main
+   |
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_correction_swatches_benchmark.py:72:5
+   |
+70 | def test_main_execution(capsys):
+71 |     """✅ Output de tablas (stdout)"""
+72 |     from colour_checker_detection.correction_swatches_benchmark import main
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+73 |
+74 |     base_dir = Path("G:/colour-checker-detection/colour_checker_detection")
+   |
+
+INP001 File `colour_checker_detection\tests\test_correction_template.py` is part of an implicit namespace package. Add an `__init__.py`.
+--> colour_checker_detection\tests\test_correction_template.py:1:1
+
+ANN201 Missing return type annotation for public function `test_imports_and_dependencies`
+  --> colour_checker_detection\tests\test_correction_template.py:17:5
+   |
+17 | def test_imports_and_dependencies():
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+18 |     """✅ Imports y dependencias"""
+19 |     try:
+   |
+help: Add return type annotation: `None`
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_correction_template.py:20:9
+   |
+18 |     """✅ Imports y dependencias"""
+19 |     try:
+20 |         import colour_checker_detection.correction_template
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+21 |         import rawpy
+22 |         import colour
+   |
+
+F401 `colour_checker_detection.correction_template` imported but unused; consider using `importlib.util.find_spec` to test for availability
+  --> colour_checker_detection\tests\test_correction_template.py:20:16
+   |
+18 |     """✅ Imports y dependencias"""
+19 |     try:
+20 |         import colour_checker_detection.correction_template
+   |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+21 |         import rawpy
+22 |         import colour
+   |
+help: Remove unused import: `colour_checker_detection.correction_template`
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_correction_template.py:21:9
+   |
+19 |     try:
+20 |         import colour_checker_detection.correction_template
+21 |         import rawpy
+   |         ^^^^^^^^^^^^
+22 |         import colour
+23 |         import cv2
+   |
+
+F401 `rawpy` imported but unused; consider using `importlib.util.find_spec` to test for availability
+  --> colour_checker_detection\tests\test_correction_template.py:21:16
+   |
+19 |     try:
+20 |         import colour_checker_detection.correction_template
+21 |         import rawpy
+   |                ^^^^^
+22 |         import colour
+23 |         import cv2
+   |
+help: Remove unused import: `rawpy`
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_correction_template.py:22:9
+   |
+20 |         import colour_checker_detection.correction_template
+21 |         import rawpy
+22 |         import colour
+   |         ^^^^^^^^^^^^^
+23 |         import cv2
+24 |         from colour_checker_detection.detection import detect_colour_checkers_templated
+   |
+
+F401 `colour` imported but unused; consider using `importlib.util.find_spec` to test for availability
+  --> colour_checker_detection\tests\test_correction_template.py:22:16
+   |
+20 |         import colour_checker_detection.correction_template
+21 |         import rawpy
+22 |         import colour
+   |                ^^^^^^
+23 |         import cv2
+24 |         from colour_checker_detection.detection import detect_colour_checkers_templated
+   |
+help: Remove unused import: `colour`
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_correction_template.py:23:9
+   |
+21 |         import rawpy
+22 |         import colour
+23 |         import cv2
+   |         ^^^^^^^^^^
+24 |         from colour_checker_detection.detection import detect_colour_checkers_templated
+25 |     except ImportError as e:
+   |
+
+F401 `cv2` imported but unused; consider using `importlib.util.find_spec` to test for availability
+  --> colour_checker_detection\tests\test_correction_template.py:23:16
+   |
+21 |         import rawpy
+22 |         import colour
+23 |         import cv2
+   |                ^^^
+24 |         from colour_checker_detection.detection import detect_colour_checkers_templated
+25 |     except ImportError as e:
+   |
+help: Remove unused import: `cv2`
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_correction_template.py:24:9
+   |
+22 |         import colour
+23 |         import cv2
+24 |         from colour_checker_detection.detection import detect_colour_checkers_templated
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+25 |     except ImportError as e:
+26 |         pytest.fail(f"Missing dependency: {e}")
+   |
+
+F401 `colour_checker_detection.detection.detect_colour_checkers_templated` imported but unused; consider using `importlib.util.find_spec` to test for availability
+  --> colour_checker_detection\tests\test_correction_template.py:24:56
+   |
+22 |         import colour
+23 |         import cv2
+24 |         from colour_checker_detection.detection import detect_colour_checkers_templated
+   |                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+25 |     except ImportError as e:
+26 |         pytest.fail(f"Missing dependency: {e}")
+   |
+help: Remove unused import: `colour_checker_detection.detection.detect_colour_checkers_templated`
+
+ANN201 Missing return type annotation for public function `test_detection_logic_basic`
+  --> colour_checker_detection\tests\test_correction_template.py:29:5
+   |
+29 | def test_detection_logic_basic(tmp_path):
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+30 |     """✅ Detección de ColorChecker y ✅ Generación de salidas"""
+31 |     from colour_checker_detection.correction_template import main
+   |
+help: Add return type annotation: `None`
+
+ANN001 Missing type annotation for function argument `tmp_path`
+  --> colour_checker_detection\tests\test_correction_template.py:29:32
+   |
+29 | def test_detection_logic_basic(tmp_path):
+   |                                ^^^^^^^^
+30 |     """✅ Detección de ColorChecker y ✅ Generación de salidas"""
+31 |     from colour_checker_detection.correction_template import main
+   |
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_correction_template.py:31:5
+   |
+29 | def test_detection_logic_basic(tmp_path):
+30 |     """✅ Detección de ColorChecker y ✅ Generación de salidas"""
+31 |     from colour_checker_detection.correction_template import main
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+32 |
+33 |     # Setup paths
+   |
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_correction_template.py:43:5
+   |
+42 |     # Mock plt.show to avoid UI, allow savefig
+43 |     import matplotlib.pyplot as plt
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+44 |
+45 |     with pytest.MonkeyPatch.context() as m:
+   |
+
+E501 Line too long (90 > 88)
+  --> colour_checker_detection\tests\test_correction_template.py:83:89
+   |
+81 |         assert len(rgb) == 3
+82 |         # Linear RGB should be 0-1 (usually) or raw values.
+83 |         # The script divides by 65535 or 255. `read_raw_high_res` divides by 65535 or 255.
+   |                                                                                         ^^
+84 |         # So range should be 0-1.
+85 |         assert all(0.0 <= x <= 1.5 for x in rgb), (
+   |
+
+ANN201 Missing return type annotation for public function `test_edge_cases_empty_image`
+  --> colour_checker_detection\tests\test_correction_template.py:90:5
+   |
+90 | def test_edge_cases_empty_image():
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+91 |     """✅ Manejo de errores: Imagen vacía / invalida"""
+92 |     from colour_checker_detection.detection import detect_colour_checkers_templated
+   |
+help: Add return type annotation: `None`
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_correction_template.py:92:5
+   |
+90 | def test_edge_cases_empty_image():
+91 |     """✅ Manejo de errores: Imagen vacía / invalida"""
+92 |     from colour_checker_detection.detection import detect_colour_checkers_templated
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+93 |
+94 |     empty_img = np.zeros((100, 100, 3), dtype=np.float32)
+   |
+
+ANN201 Missing return type annotation for public function `test_edge_cases_none_input`
+   --> colour_checker_detection\tests\test_correction_template.py:101:5
+    |
+101 | def test_edge_cases_none_input():
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+102 |     """✅ Validar inputs incorrectos (None)"""
+103 |     from colour_checker_detection.detection import detect_colour_checkers_templated
+    |
+help: Add return type annotation: `None`
+
+PLC0415 `import` should be at the top-level of a file
+   --> colour_checker_detection\tests\test_correction_template.py:103:5
+    |
+101 | def test_edge_cases_none_input():
+102 |     """✅ Validar inputs incorrectos (None)"""
+103 |     from colour_checker_detection.detection import detect_colour_checkers_templated
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+104 |
+105 |     # Expect error for None
+    |
+
+INP001 File `colour_checker_detection\tests\test_detection_swatches.py` is part of an implicit namespace package. Add an `__init__.py`.
+--> colour_checker_detection\tests\test_detection_swatches.py:1:1
+
+ANN201 Missing return type annotation for public function `test_imports_and_dependencies`
+  --> colour_checker_detection\tests\test_detection_swatches.py:16:5
+   |
+16 | def test_imports_and_dependencies():
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+17 |     """✅ Imports y dependencias"""
+18 |     try:
+   |
+help: Add return type annotation: `None`
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_detection_swatches.py:19:9
+   |
+17 |     """✅ Imports y dependencias"""
+18 |     try:
+19 |         import colour_checker_detection.detection_swatches
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+20 |         from colour_checker_detection.detection_swatches import process_image
+21 |     except ImportError as e:
+   |
+
+F401 `colour_checker_detection.detection_swatches` imported but unused; consider using `importlib.util.find_spec` to test for availability
+  --> colour_checker_detection\tests\test_detection_swatches.py:19:16
+   |
+17 |     """✅ Imports y dependencias"""
+18 |     try:
+19 |         import colour_checker_detection.detection_swatches
+   |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+20 |         from colour_checker_detection.detection_swatches import process_image
+21 |     except ImportError as e:
+   |
+help: Remove unused import: `colour_checker_detection.detection_swatches`
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_detection_swatches.py:20:9
+   |
+18 |     try:
+19 |         import colour_checker_detection.detection_swatches
+20 |         from colour_checker_detection.detection_swatches import process_image
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+21 |     except ImportError as e:
+22 |         pytest.fail(f"Missing dependency: {e}")
+   |
+
+F401 `colour_checker_detection.detection_swatches.process_image` imported but unused; consider using `importlib.util.find_spec` to test for availability
+  --> colour_checker_detection\tests\test_detection_swatches.py:20:65
+   |
+18 |     try:
+19 |         import colour_checker_detection.detection_swatches
+20 |         from colour_checker_detection.detection_swatches import process_image
+   |                                                                 ^^^^^^^^^^^^^
+21 |     except ImportError as e:
+22 |         pytest.fail(f"Missing dependency: {e}")
+   |
+help: Remove unused import: `colour_checker_detection.detection_swatches.process_image`
+
+ANN201 Missing return type annotation for public function `test_process_image_geometry_and_extraction`
+  --> colour_checker_detection\tests\test_detection_swatches.py:25:5
+   |
+25 | def test_process_image_geometry_and_extraction(tmp_path):
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+26 |     """✅ Validación geométrica y ✅ Extracción de swatches"""
+27 |     from colour_checker_detection.detection_swatches import process_image
+   |
+help: Add return type annotation: `None`
+
+ANN001 Missing type annotation for function argument `tmp_path`
+  --> colour_checker_detection\tests\test_detection_swatches.py:25:48
+   |
+25 | def test_process_image_geometry_and_extraction(tmp_path):
+   |                                                ^^^^^^^^
+26 |     """✅ Validación geométrica y ✅ Extracción de swatches"""
+27 |     from colour_checker_detection.detection_swatches import process_image
+   |
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_detection_swatches.py:27:5
+   |
+25 | def test_process_image_geometry_and_extraction(tmp_path):
+26 |     """✅ Validación geométrica y ✅ Extracción de swatches"""
+27 |     from colour_checker_detection.detection_swatches import process_image
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+28 |
+29 |     base_dir = Path("G:/colour-checker-detection/colour_checker_detection")
+   |
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_detection_swatches.py:45:5
+   |
+44 |     # Mock plt to avoid blocking
+45 |     import matplotlib.pyplot as plt
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+46 |
+47 |     with pytest.MonkeyPatch.context() as m:
+   |
+
+ANN201 Missing return type annotation for public function `test_edge_case_no_detection`
+  --> colour_checker_detection\tests\test_detection_swatches.py:86:5
+   |
+86 | def test_edge_case_no_detection():
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+87 |     """✅ Edge cases: Imagen sin ColorChecker / Vacía"""
+88 |     from colour_checker_detection.detection_swatches import process_image
+   |
+help: Add return type annotation: `None`
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_detection_swatches.py:88:5
+   |
+86 | def test_edge_case_no_detection():
+87 |     """✅ Edge cases: Imagen sin ColorChecker / Vacía"""
+88 |     from colour_checker_detection.detection_swatches import process_image
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+89 |     # We can create a dummy file? No `process_image` takes Path and reads with rawpy.
+90 |     # Rawpy requires actual raw file.
+   |
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_detection_swatches.py:97:9
+   |
+95 |     with pytest.MonkeyPatch.context() as m:
+96 |         # Mock read_raw_high_res
+97 |         import colour_checker_detection.detection_swatches as ds
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+98 |
+99 |         def mock_read(*args, **kwargs):
+   |
+
+ANN202 Missing return type annotation for private function `mock_read`
+   --> colour_checker_detection\tests\test_detection_swatches.py:99:13
+    |
+ 97 |         import colour_checker_detection.detection_swatches as ds
+ 98 |
+ 99 |         def mock_read(*args, **kwargs):
+    |             ^^^^^^^^^
+100 |             return np.zeros((500, 500, 3), dtype=np.float32)
+    |
+help: Add return type annotation
+
+ANN002 Missing type annotation for `*args`
+   --> colour_checker_detection\tests\test_detection_swatches.py:99:23
+    |
+ 97 |         import colour_checker_detection.detection_swatches as ds
+ 98 |
+ 99 |         def mock_read(*args, **kwargs):
+    |                       ^^^^^
+100 |             return np.zeros((500, 500, 3), dtype=np.float32)
+    |
+
+ARG001 Unused function argument: `args`
+   --> colour_checker_detection\tests\test_detection_swatches.py:99:24
+    |
+ 97 |         import colour_checker_detection.detection_swatches as ds
+ 98 |
+ 99 |         def mock_read(*args, **kwargs):
+    |                        ^^^^
+100 |             return np.zeros((500, 500, 3), dtype=np.float32)
+    |
+
+ANN003 Missing type annotation for `**kwargs`
+   --> colour_checker_detection\tests\test_detection_swatches.py:99:30
+    |
+ 97 |         import colour_checker_detection.detection_swatches as ds
+ 98 |
+ 99 |         def mock_read(*args, **kwargs):
+    |                              ^^^^^^^^
+100 |             return np.zeros((500, 500, 3), dtype=np.float32)
+    |
+
+ARG001 Unused function argument: `kwargs`
+   --> colour_checker_detection\tests\test_detection_swatches.py:99:32
+    |
+ 97 |         import colour_checker_detection.detection_swatches as ds
+ 98 |
+ 99 |         def mock_read(*args, **kwargs):
+    |                                ^^^^^^
+100 |             return np.zeros((500, 500, 3), dtype=np.float32)
+    |
+
+INP001 File `colour_checker_detection\tests\test_test_script.py` is part of an implicit namespace package. Add an `__init__.py`.
+--> colour_checker_detection\tests\test_test_script.py:1:1
+
+ANN201 Missing return type annotation for public function `test_test_script_exists`
+  --> colour_checker_detection\tests\test_test_script.py:8:5
+   |
+ 8 | def test_test_script_exists():
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+ 9 |     """Verifica que el módulo test.py existe y se puede importar."""
+10 |     try:
+   |
+help: Add return type annotation: `None`
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_test_script.py:11:9
+   |
+ 9 |     """Verifica que el módulo test.py existe y se puede importar."""
+10 |     try:
+11 |         from colour_checker_detection import test
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+12 |     except ImportError:
+13 |         pytest.fail("No se pudo importar colour_checker_detection.test")
+   |
+
+ANN201 Missing return type annotation for public function `test_functions_exist`
+  --> colour_checker_detection\tests\test_test_script.py:17:5
+   |
+17 | def test_functions_exist():
+   |     ^^^^^^^^^^^^^^^^^^^^
+18 |     """Verifica que las funciones principales existen."""
+19 |     from colour_checker_detection.test import run_benchmark, adapter_yolo_inferencer
+   |
+help: Add return type annotation: `None`
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_test_script.py:19:5
+   |
+17 | def test_functions_exist():
+18 |     """Verifica que las funciones principales existen."""
+19 |     from colour_checker_detection.test import run_benchmark, adapter_yolo_inferencer
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+20 |
+21 |     assert callable(run_benchmark)
+   |
+
+ANN201 Missing return type annotation for public function `test_full_benchmark`
+  --> colour_checker_detection\tests\test_test_script.py:25:5
+   |
+25 | def test_full_benchmark(tmp_path):
+   |     ^^^^^^^^^^^^^^^^^^^
+26 |     """Test del benchmark completo usando imágenes locales."""
+27 |     from colour_checker_detection.test import run_benchmark
+   |
+help: Add return type annotation: `None`
+
+ANN001 Missing type annotation for function argument `tmp_path`
+  --> colour_checker_detection\tests\test_test_script.py:25:25
+   |
+25 | def test_full_benchmark(tmp_path):
+   |                         ^^^^^^^^
+26 |     """Test del benchmark completo usando imágenes locales."""
+27 |     from colour_checker_detection.test import run_benchmark
+   |
+
+ARG001 Unused function argument: `tmp_path`
+  --> colour_checker_detection\tests\test_test_script.py:25:25
+   |
+25 | def test_full_benchmark(tmp_path):
+   |                         ^^^^^^^^
+26 |     """Test del benchmark completo usando imágenes locales."""
+27 |     from colour_checker_detection.test import run_benchmark
+   |
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_test_script.py:27:5
+   |
+25 | def test_full_benchmark(tmp_path):
+26 |     """Test del benchmark completo usando imágenes locales."""
+27 |     from colour_checker_detection.test import run_benchmark
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+28 |
+29 |     # Path hardcoded conocido del proyecto (según instrucción del usuario)
+   |
+
+E501 Line too long (105 > 88)
+  --> colour_checker_detection\tests\test_test_script.py:41:89
+   |
+40 |     # Ejecutar benchmark
+41 |     # No genera archivos de salida, solo logs y visualizaciones (que pueden bloquear en CI pero ok local)
+   |                                                                                         ^^^^^^^^^^^^^^^^^
+42 |     # Mockeamos plt.show para no bloquear
+43 |     import matplotlib.pyplot as plt
+   |
+
+PLC0415 `import` should be at the top-level of a file
+  --> colour_checker_detection\tests\test_test_script.py:43:5
+   |
+41 |     # No genera archivos de salida, solo logs y visualizaciones (que pueden bloquear en CI pero ok local)
+42 |     # Mockeamos plt.show para no bloquear
+43 |     import matplotlib.pyplot as plt
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+44 |
+45 |     with pytest.MonkeyPatch.context() as m:
+   |
+
+D100 Missing docstring in public module
+--> colour_checker_detection\utils_geom.py:1:1
+
+ANN201 Missing return type annotation for public function `order_points`
+  --> colour_checker_detection\utils_geom.py:12:5
+   |
+12 | def order_points(pts):
+   |     ^^^^^^^^^^^^
+13 |     """
+14 |     Ordena las coordenadas del cuadrilátero: TL, TR, BR, BL.
+   |
+help: Add return type annotation
+
+ANN001 Missing type annotation for function argument `pts`
+  --> colour_checker_detection\utils_geom.py:12:18
+   |
+12 | def order_points(pts):
+   |                  ^^^
+13 |     """
+14 |     Ordena las coordenadas del cuadrilátero: TL, TR, BR, BL.
+   |
+
+RUF059 Unpacked variable `bl` is never used
+  --> colour_checker_detection\utils_geom.py:26:10
+   |
+24 |     # Ordenar los de la izquierda por y (TL, BL)
+25 |     leftMost = leftMost[np.argsort(leftMost[:, 1]), :]
+26 |     (tl, bl) = leftMost
+   |          ^^
+27 |
+28 |     # Ordenar los de la derecha:
+   |
+help: Prefix it with an underscore or any other dummy variable pattern
+
+E501 Line too long (89 > 88)
+  --> colour_checker_detection\utils_geom.py:29:89
+   |
+28 |     # Ordenar los de la derecha:
+29 |     # Usamos distancia euclidiana al TL para distinguir TR (más cerca) de BR (más lejos)?
+   |                                                                                         ^
+30 |     # O simplemente por Y.
+31 |     # Si hay mucha rotación, Y puede fallar. Distance es más robusto.
+   |
+
+RUF059 Unpacked variable `tr` is never used
+  --> colour_checker_detection\utils_geom.py:33:6
+   |
+31 |     # Si hay mucha rotación, Y puede fallar. Distance es más robusto.
+32 |     D = dist.cdist(tl[np.newaxis], rightMost, "euclidean")[0]
+33 |     (tr, br) = rightMost[np.argsort(D), :]
+   |      ^^
+34 |
+35 |     # Pero espera, si es TR, Y debería ser menor que BR usualmente?
+   |
+help: Prefix it with an underscore or any other dummy variable pattern
+
+RUF059 Unpacked variable `br` is never used
+  --> colour_checker_detection\utils_geom.py:33:10
+   |
+31 |     # Si hay mucha rotación, Y puede fallar. Distance es más robusto.
+32 |     D = dist.cdist(tl[np.newaxis], rightMost, "euclidean")[0]
+33 |     (tr, br) = rightMost[np.argsort(D), :]
+   |          ^^
+34 |
+35 |     # Pero espera, si es TR, Y debería ser menor que BR usualmente?
+   |
+help: Prefix it with an underscore or any other dummy variable pattern
+
+A001 Variable `copyright` is shadowing a Python builtin
+  --> docs\conf.py:75:1
+   |
+74 | project = "colorchecker-pipeline"
+75 | copyright = "2024 Laboratorio de Arqueología Digital UC"
+   | ^^^^^^^^^
+76 | author = "Laboratorio de Arqueología Digital UC"
+77 | version = f"{package.__major_version__}.{package.__minor_version__}"
+   |
+
+ANN202 Missing return type annotation for private function `_delete_pattern`
+  --> tasks.py:14:5
+   |
+14 | def _delete_pattern(pattern: str, recursive: bool = True):
+   |     ^^^^^^^^^^^^^^^
+15 |     """Ayuda para borrar archivos o carpetas por patrón."""
+16 |     for path in BASE_DIR.rglob(pattern):
+   |
+help: Add return type annotation: `None`
+
+T201 `print` found
+  --> tasks.py:18:13
+   |
+16 |     for path in BASE_DIR.rglob(pattern):
+17 |         if path.is_dir() and recursive:
+18 |             print(f"Borrando directorio: {path}")
+   |             ^^^^^
+19 |             shutil.rmtree(path)
+20 |         elif path.is_file():
+   |
+help: Remove `print`
+
+T201 `print` found
+  --> tasks.py:21:13
+   |
+19 |             shutil.rmtree(path)
+20 |         elif path.is_file():
+21 |             print(f"Borrando archivo: {path}")
+   |             ^^^^^
+22 |             path.unlink()
+   |
+help: Remove `print`
+
+ANN201 Missing return type annotation for public function `clean`
+  --> tasks.py:26:5
+   |
+25 | @task
+26 | def clean(ctx, bytecode=True, results=False, pytest=True):
+   |     ^^^^^
+27 |     """
+28 |     Limpia el repositorio de archivos temporales y resultados.
+   |
+help: Add return type annotation: `None`
+
+ANN001 Missing type annotation for function argument `ctx`
+  --> tasks.py:26:11
+   |
+25 | @task
+26 | def clean(ctx, bytecode=True, results=False, pytest=True):
+   |           ^^^
+27 |     """
+28 |     Limpia el repositorio de archivos temporales y resultados.
+   |
+
+ARG001 Unused function argument: `ctx`
+  --> tasks.py:26:11
+   |
+25 | @task
+26 | def clean(ctx, bytecode=True, results=False, pytest=True):
+   |           ^^^
+27 |     """
+28 |     Limpia el repositorio de archivos temporales y resultados.
+   |
+
+ANN001 Missing type annotation for function argument `bytecode`
+  --> tasks.py:26:16
+   |
+25 | @task
+26 | def clean(ctx, bytecode=True, results=False, pytest=True):
+   |                ^^^^^^^^
+27 |     """
+28 |     Limpia el repositorio de archivos temporales y resultados.
+   |
+
+ANN001 Missing type annotation for function argument `results`
+  --> tasks.py:26:31
+   |
+25 | @task
+26 | def clean(ctx, bytecode=True, results=False, pytest=True):
+   |                               ^^^^^^^
+27 |     """
+28 |     Limpia el repositorio de archivos temporales y resultados.
+   |
+
+ANN001 Missing type annotation for function argument `pytest`
+  --> tasks.py:26:46
+   |
+25 | @task
+26 | def clean(ctx, bytecode=True, results=False, pytest=True):
+   |                                              ^^^^^^
+27 |     """
+28 |     Limpia el repositorio de archivos temporales y resultados.
+   |
+
+T201 `print` found
+  --> tasks.py:40:5
+   |
+38 |         Borra caché de pytest (Default: True).
+39 |     """
+40 |     print(">>> Iniciando Limpieza...")
+   |     ^^^^^
+41 |
+42 |     if bytecode:
+   |
+help: Remove `print`
+
+T201 `print` found
+  --> tasks.py:43:9
+   |
+42 |     if bytecode:
+43 |         print("-> Limpiando Bytecode...")
+   |         ^^^^^
+44 |         _delete_pattern("__pycache__")
+45 |         _delete_pattern("*.pyc", recursive=False)
+   |
+help: Remove `print`
+
+T201 `print` found
+  --> tasks.py:48:9
+   |
+47 |     if pytest:
+48 |         print("-> Limpiando Pytest Cache...")
+   |         ^^^^^
+49 |         _delete_pattern(".pytest_cache")
+   |
+help: Remove `print`
+
+T201 `print` found
+  --> tasks.py:52:9
+   |
+51 |     if results:
+52 |         print(f"-> Limpiando Resultados en {RESULTS_DIR}...")
+   |         ^^^^^
+53 |         if RESULTS_DIR.exists():
+54 |             shutil.rmtree(RESULTS_DIR)
+   |
+help: Remove `print`
+
+T201 `print` found
+  --> tasks.py:55:13
+   |
+53 |         if RESULTS_DIR.exists():
+54 |             shutil.rmtree(RESULTS_DIR)
+55 |             print(f"    Eliminado: {RESULTS_DIR}")
+   |             ^^^^^
+56 |         else:
+57 |             print("    Nada que limpiar en resultados.")
+   |
+help: Remove `print`
+
+T201 `print` found
+  --> tasks.py:57:13
+   |
+55 |             print(f"    Eliminado: {RESULTS_DIR}")
+56 |         else:
+57 |             print("    Nada que limpiar en resultados.")
+   |             ^^^^^
+58 |
+59 |     print(">>> Limpieza Finalizada.")
+   |
+help: Remove `print`
+
+T201 `print` found
+  --> tasks.py:59:5
+   |
+57 |             print("    Nada que limpiar en resultados.")
+58 |
+59 |     print(">>> Limpieza Finalizada.")
+   |     ^^^^^
+   |
+help: Remove `print`
+
+ANN201 Missing return type annotation for public function `requirements`
+  --> tasks.py:63:5
+   |
+62 | @task
+63 | def requirements(ctx):
+   |     ^^^^^^^^^^^^
+64 |     """
+65 |     Exporta requirements.txt usando uv (útil si mueves el script a otro lado).
+   |
+help: Add return type annotation: `None`
+
+ANN001 Missing type annotation for function argument `ctx`
+  --> tasks.py:63:18
+   |
+62 | @task
+63 | def requirements(ctx):
+   |                  ^^^
+64 |     """
+65 |     Exporta requirements.txt usando uv (útil si mueves el script a otro lado).
+   |
+
+T201 `print` found
+  --> tasks.py:67:5
+   |
+65 |     Exporta requirements.txt usando uv (útil si mueves el script a otro lado).
+66 |     """
+67 |     print(">>> Exportando requirements.txt...")
+   |     ^^^^^
+68 |     ctx.run("uv export --no-hashes --all-extras --no-dev > requirements.txt")
+69 |     print(">>> requirements.txt generado exitosamente.")
+   |
+help: Remove `print`
+
+T201 `print` found
+  --> tasks.py:69:5
+   |
+67 |     print(">>> Exportando requirements.txt...")
+68 |     ctx.run("uv export --no-hashes --all-extras --no-dev > requirements.txt")
+69 |     print(">>> requirements.txt generado exitosamente.")
+   |     ^^^^^
+   |
+help: Remove `print`
+
+Found 249 errors.
+No fixes available (74 hidden fixes can be enabled with the `--unsafe-fixes` option).
