@@ -1,5 +1,5 @@
 """
-Colour - Checker Detection - Correction Swatches
+Colorchecker Pipeline - Correction Swatches
 ================================================
 
 Defines the scripts for colour checker detection and correction.
