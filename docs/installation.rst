@@ -26,23 +26,19 @@ Secondary Dependencies
 - `click >= 8, < 9 <https://pypi.org/project/click>`__
 - `ultralytics >= 8, < 9 <https://pypi.org/project/ultralytics>`__
 
-Pypi
-----
+Installation
+------------
 
-Once the dependencies are satisfied, **Colour - Checker Detection** can be installed from
-the `Python Package Index <http://pypi.python.org/pypi/colour-checker-detection>`__ by
-issuing this command in a shell::
+Use **uv** for dependency management:
 
-    pip install --user colour-checker-detection
+.. code-block:: bash
 
-The tests suite dependencies are installed as follows::
+    uv sync
 
-    pip install --user 'colour-checker-detection[tests]'
+This will install the project and its dependencies (including `ultralytics` if optional groups are requested).
 
-The documentation building dependencies are installed as follows::
+To run scripts:
 
-    pip install --user 'colour-checker-detection[docs]'
+.. code-block:: bash
 
-The overall development dependencies are installed as follows::
-
-    pip install --user 'colour-checker-detection[development]'
+    uv run python colour_checker_detection/test.py

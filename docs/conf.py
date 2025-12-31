@@ -71,8 +71,9 @@ templates_path = ["_templates"]
 source_suffix = ".rst"
 master_doc = "index"
 
-project = package.__application_name__
-copyright = package.__copyright__.replace("Copyright (C)", "")  # noqa: A001
+project = "colorchecker-pipeline"
+copyright = "2024 Laboratorio de Arqueología Digital UC"
+author = "Laboratorio de Arqueología Digital UC"
 version = f"{package.__major_version__}.{package.__minor_version__}"
 release = package.__version__
 
