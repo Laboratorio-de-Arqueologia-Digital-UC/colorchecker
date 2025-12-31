@@ -165,6 +165,6 @@ def __getattr__(name: str) -> typing.Any:
     ]:
         import importlib
 
-        return getattr(importlib.import_module(f".inference", __package__), name)
+        return getattr(importlib.import_module(".inference", __package__), name)
 
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")

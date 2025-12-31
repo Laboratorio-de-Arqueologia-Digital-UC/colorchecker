@@ -1,4 +1,3 @@
-
 import numpy as np
 from scipy.spatial import distance as dist
 
@@ -8,6 +7,7 @@ __license__ = "Apache-2.0 - https://opensource.org/licenses/Apache-2.0"
 __maintainer__ = "Laboratorio de Arqueología Digital UC"
 __email__ = "victor.mendez@uc.cl"
 __status__ = "Development"
+
 
 def order_points(pts):
     """
@@ -41,14 +41,14 @@ def order_points(pts):
     # BR: max sum(pts)
     # TR: min diff(y-x)? NO, diff(np.diff(pts, axis=1))
     # Vamos a usar la implementación robusta de PyImageSearch.
-    
+
     rect = np.zeros((4, 2), dtype="float32")
     s = pts.sum(axis=1)
-    rect[0] = pts[np.argmin(s)] # TL
-    rect[2] = pts[np.argmax(s)] # BR
+    rect[0] = pts[np.argmin(s)]  # TL
+    rect[2] = pts[np.argmax(s)]  # BR
 
     diff = np.diff(pts, axis=1)
-    rect[1] = pts[np.argmin(diff)] # TR
-    rect[3] = pts[np.argmax(diff)] # BL
+    rect[1] = pts[np.argmin(diff)]  # TR
+    rect[3] = pts[np.argmax(diff)]  # BL
 
     return rect

@@ -48,7 +48,6 @@ from colour.utilities import (
     as_float_array,
     as_int_array,
     metric_mse,
-    usage_warning,
 )
 from colour.utilities.documentation import (
     DocstringDict,
@@ -634,9 +633,9 @@ def detect_contours(
     if max_val == min_val:
         image_g = np.zeros_like(image_g, dtype=np.uint8)
     else:
-        image_g = (
-            linear_conversion(image_g, (min_val, max_val), (0, 1)) * 255
-        ).astype(np.uint8)
+        image_g = (linear_conversion(image_g, (min_val, max_val), (0, 1)) * 255).astype(
+            np.uint8
+        )
 
     # Denoising
     image_d = image_g
