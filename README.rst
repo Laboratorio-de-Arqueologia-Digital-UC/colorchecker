@@ -41,6 +41,18 @@ Esto instalará automáticamente todas las dependencias definidas en ``pyproject
 *   ``ultralytics`` (opcional, para inferencia YOLO)
 *   ``matplotlib``
 
+Ejecutar Tests
+--------------
+
+Para validar todo el código, incluyendo los tests unitarios recién implementados que cubren detección, corrección y benchmarks:
+
+.. code-block:: bash
+
+    uv run pytest colour_checker_detection/tests/
+
+**Nota sobre Tests de Benchmark**:
+Los tests completos (que procesan imágenes RAW reales) requieren que las imágenes de prueba ("local_test") estén presentes. En CI/CD, esto se maneja vía Git LFS. Si ejecutas localmente sin estas imágenes, los tests se saltarán automáticamente (SKIPPED).
+
 Scripts Principales
 -------------------
 

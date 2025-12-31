@@ -31,11 +31,9 @@ jobs:
       
       - name: Lint
         run: uv run ruff check .
-        continue-on-error: true
       
       - name: Type check
         run: uv run pyright
-        continue-on-error: true
 
   test:
     name: "🧪 Tests"
@@ -43,18 +41,24 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       
       - uses: astral-sh/setup-uv@v5
       
       - name: Setup Python
         run: uv python install 3.12
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-glx
       
       - name: Install dependencies
         run: uv sync --all-extras
       
       - name: Run tests
         run: uv run pytest -v
-        continue-on-error: true
 
   build:
     name: "📦 Build Check"

@@ -42,6 +42,8 @@ dependencies = [
     "psutil>=7.2.0",
     "pre-commit>=4.5.1",
     "pip-licenses>=5.5.0",
+    "yamllint>=1.37.1",
+    "pytest>=9.0.2",
 ]
 
 [project.optional-dependencies]
@@ -92,6 +94,7 @@ dev = [
     "pytest-cov<7.0.0",
     "pytest-xdist",
     "scipy-stubs",
+    "ruff",
     "toml",
     "twine",
 ]
@@ -194,3 +197,15 @@ convention = "numpy"
 
 [tool.ruff.format]
 docstring-code-format = true
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.3.0"
+tag_format = "v$version"
+version_files = [
+    "colour_checker_detection/__init__.py:__version__",
+    "pyproject.toml:version"
+]
+update_changelog_on_bump = true
+changelog_file = "CHANGELOG.md"
+changelog_incremental = true
