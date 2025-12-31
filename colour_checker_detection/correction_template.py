@@ -8,26 +8,26 @@ Defines the scripts for colour checker detection and correction.
 from __future__ import annotations
 
 import logging
+from datetime import datetime
+from pathlib import Path
+
+import colour
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+import rawpy
+from colour.characterisation import CCS_COLOURCHECKERS
+from colour.difference import delta_E
+from colour.models import RGB_COLOURSPACES
 
 # Importaciones de la librería interna
 from colour_checker_detection.detection import (
-    detect_colour_checkers_templated,
     SETTINGS_DETECTION_COLORCHECKER_CLASSIC,
+    detect_colour_checkers_templated,
 )
 from colour_checker_detection.detection.common import (
     sample_colour_checker,
 )
-from pathlib import Path
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-from datetime import datetime
-
-import rawpy
-import colour
-from colour.characterisation import CCS_COLOURCHECKERS
-from colour.models import RGB_COLOURSPACES
-from colour.difference import delta_E
 
 __author__ = "Laboratorio de Arqueología Digital UC"
 __copyright__ = "Copyright 2018 Laboratorio de Arqueología Digital UC"

@@ -298,7 +298,7 @@ def segmenter_templated(
             [1069,  715]]], dtype=int32)
     """
 
-    from sklearn.cluster import DBSCAN  # noqa: PLC0415
+    from sklearn.cluster import DBSCAN
 
     settings = Structure(**SETTINGS_TEMPLATED_COLORCHECKER_CLASSIC)
     settings.update(**kwargs)

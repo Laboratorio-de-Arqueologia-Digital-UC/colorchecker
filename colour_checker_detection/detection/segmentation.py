@@ -330,7 +330,7 @@ def segmenter_default(
         if minimum_area < cv2.contourArea(swatch_contour) < maximum_area and is_square(
             swatch_contour
         ):
-            squares.append(  # noqa: PERF401
+            squares.append(
                 as_int32_array(cv2.boxPoints(cv2.minAreaRect(swatch_contour)))
             )
 

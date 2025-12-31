@@ -8,27 +8,27 @@ Defines the scripts for colour checker detection and correction.
 from __future__ import annotations
 
 import logging
+from datetime import datetime
+from pathlib import Path
+
+import colour
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+import rawpy
+from colour.characterisation import CCS_COLOURCHECKERS
+from colour.difference import delta_E
+from colour.models import RGB_COLOURSPACES
 
 # Importaciones de la librería interna
 from colour_checker_detection.detection import (
+    SETTINGS_DETECTION_COLORCHECKER_CLASSIC,
     detect_colour_checkers_segmentation,
     detect_colour_checkers_templated,
-    SETTINGS_DETECTION_COLORCHECKER_CLASSIC,
 )
 from colour_checker_detection.detection.common import (
     sample_colour_checker,
 )
-from pathlib import Path
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-from datetime import datetime
-
-import rawpy
-import colour
-from colour.characterisation import CCS_COLOURCHECKERS
-from colour.models import RGB_COLOURSPACES
-from colour.difference import delta_E
 
 __author__ = "Laboratorio de Arqueología Digital UC"
 __copyright__ = "Copyright 2018 Laboratorio de Arqueología Digital UC"
@@ -97,30 +97,6 @@ def read_raw_high_res(path: Path, brightness: float = 1.5, linear: bool = False)
         )
         return as_float_array(img_rgb) / 255.0
 
-
-def main(images_dir: Path | None = None, output_dir: Path | None = None):
-    # 1. Configuración
-    if images_dir is None:
-        base_dir = Path("G:/colour-checker-detection")  # Asumiendo path del user
-        images_dir = base_dir / "colour_checker_detection" / "local_test"
-
-    # BUSCAR IMAGENES (.CR2, .ARW, .RAF)
-    img_files = (
-        list(images_dir.glob("*.CR2"))
-        + list(images_dir.glob("*.ARW"))
-        + list(images_dir.glob("*.RAF"))
-    )
-    if not img_files:
-        LOGGER.error("No se encontraron imagenes RAW en %s", images_dir)
-        return
-
-    # Output Dir
-    if output_dir is None:
-        base_dir = Path("G:/colour-checker-detection")
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        # User Request: Save to test_results
-        output_dir = base_dir / "colour_checker_detection" / "test_results" / timestamp
-    output_dir.mkdir(parents=True, exist_ok=True)
 
 
 def process_image(img_path: Path, output_dir: Path | None = None):
@@ -454,5 +430,4 @@ if __name__ == "__main__":
     main()
 
 
-if __name__ == "__main__":
-    main()
+

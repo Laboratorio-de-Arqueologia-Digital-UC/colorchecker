@@ -23,14 +23,14 @@ def order_points(pts):
 
     # Ordenar los de la izquierda por y (TL, BL)
     leftMost = leftMost[np.argsort(leftMost[:, 1]), :]
-    (tl, bl) = leftMost
+    (tl, _bl) = leftMost
 
     # Ordenar los de la derecha:
     # Usamos distancia euclidiana al TL para distinguir TR (más cerca) de BR (más lejos)?
     # O simplemente por Y.
     # Si hay mucha rotación, Y puede fallar. Distance es más robusto.
     D = dist.cdist(tl[np.newaxis], rightMost, "euclidean")[0]
-    (tr, br) = rightMost[np.argsort(D), :]
+    (_tr, _br) = rightMost[np.argsort(D), :]
 
     # Pero espera, si es TR, Y debería ser menor que BR usualmente?
     # Si está rotado 90 grados??

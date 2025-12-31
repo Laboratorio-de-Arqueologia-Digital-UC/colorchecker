@@ -35,7 +35,6 @@ from .common import (
     transform_image,
 )
 
-
 # isort: split
 
 import typing

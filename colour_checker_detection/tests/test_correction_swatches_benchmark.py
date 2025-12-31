@@ -7,16 +7,17 @@ Matches user requirements:
 - Output tables
 """
 
-import pytest
 from pathlib import Path
+
+import pytest
 
 
 def test_imports_and_dependencies():
     """✅ Imports y dependencias"""
     try:
         from colour_checker_detection.correction_swatches_benchmark import (
-            run_benchmark_analysis,
             main,
+            run_benchmark_analysis,
         )
     except ImportError as e:
         pytest.fail(f"Missing dependency: {e}")

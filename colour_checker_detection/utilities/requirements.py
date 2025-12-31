@@ -42,7 +42,7 @@ def is_sklearn_installed(raise_exception: bool = False) -> bool:
     """
 
     try:  # pragma: no cover
-        import sklearn  # noqa: F401, PLC0415
+        import sklearn  # noqa: F401
     except ImportError as exception:  # pragma: no cover
         if raise_exception:
             error = (

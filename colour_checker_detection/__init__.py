@@ -96,7 +96,7 @@ try:
         .strip()
         .decode("utf-8")
     )
-except Exception:  # noqa: BLE001
+except Exception:
     _version = __version__
 
 colour.utilities.ANCILLARY_COLOUR_SCIENCE_PACKAGES[  # pyright: ignore

@@ -203,8 +203,8 @@ def segmentation(
         Inference results.
     """
 
-    from ultralytics import YOLO  # noqa: PLC0415  # pyright: ignore
-    from ultralytics.utils.downloads import download  # noqa: PLC0415
+    from ultralytics import YOLO  # pyright: ignore
+    from ultralytics.utils.downloads import download
 
     time_start = perf_counter()
 

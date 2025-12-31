@@ -11,25 +11,25 @@ Compares the performance of different detection methods focusing on:
 from __future__ import annotations
 
 import logging
-import numpy as np
-import cv2
-from pathlib import Path
 import time
 import warnings
+from pathlib import Path
+
+import colour
 
 # Suppress Colour warnings
 import colour.utilities
-from colour.utilities import suppress_warnings
+import cv2
+import numpy as np
+import rawpy
+from colour.utilities import as_float_array, suppress_warnings
 
 from colour_checker_detection.detection import (
+    SETTINGS_DETECTION_COLORCHECKER_CLASSIC,
     detect_colour_checkers_segmentation,
     detect_colour_checkers_templated,
-    SETTINGS_DETECTION_COLORCHECKER_CLASSIC,
 )
 from colour_checker_detection.detection.common import sample_colour_checker
-import colour
-import rawpy
-from colour.utilities import as_float_array
 
 # Metadata
 __author__ = "Laboratorio de Arqueología Digital UC"
@@ -74,11 +74,6 @@ def calculate_centroid(quad):
     """Calcula el centroide de un cuadrilarero (4, 2)"""
     return np.mean(quad, axis=0)
 
-
-def main(images_dir: Path | None = None):
-    if images_dir is None:
-        base_dir = Path("G:/colour-checker-detection")
-        images_dir = base_dir / "colour_checker_detection" / "local_test"
 
 
 def run_benchmark_analysis(images_dir: Path):

@@ -17,10 +17,10 @@ from pathlib import Path
 from typing import Any
 
 import cv2
-from matplotlib import patches
 import matplotlib.pyplot as plt
 import numpy as np
 import rawpy
+from matplotlib import patches
 
 try:
     from ultralytics import YOLO
@@ -30,7 +30,6 @@ except ImportError:
 # Importaciones de la librería interna
 from colour.hints import NDArrayFloat
 from colour.utilities import as_float_array
-
 
 __author__ = "Laboratorio de Arqueología Digital UC"
 __copyright__ = "Copyright 2018 Laboratorio de Arqueología Digital UC"
@@ -78,7 +77,7 @@ def read_raw_high_res(path: Path, brightness: float = 1.5) -> NDArrayFloat:
 
 
 def adapter_yolo_inferencer(
-    image: NDArrayFloat, model: YOLO, bbox_cache: list = None
+    image: NDArrayFloat, model: YOLO, bbox_cache: list | None = None
 ) -> list[Any]:
     """
     Adaptador para convertir la salida de YOLOv8 al formato esperado por
@@ -252,7 +251,7 @@ def visualize_comparison(
                     # Determinar si el quad detectado es "Vertical" (Alto > Ancho en espacio de proyección)
                     # Medimos longitudes de lados: Lado 0-1 (Top?), Lado 1-2 (Right?)
                     # Orden usual de puntos en quad: TL, TR, BR, BL (o similar)
-                    p0, p1, p2, p3 = quad
+                    p0, p1, p2, _p3 = quad
 
                     # Distancias
                     d01 = np.linalg.norm(
@@ -392,9 +391,10 @@ def run_benchmark(
                 try:
                     inference_bboxes.clear()
 
-                    custom_inferencer = lambda img, **kwargs: adapter_yolo_inferencer(
-                        img, model, inference_bboxes
-                    )
+                    def custom_inferencer(img, **kwargs):
+                        return adapter_yolo_inferencer(
+                                            img, model, inference_bboxes
+                                        )
 
                     res_inf = detect_colour_checkers_inference(
                         img_processing,

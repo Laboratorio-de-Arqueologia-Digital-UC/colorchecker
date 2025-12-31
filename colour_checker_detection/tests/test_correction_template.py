@@ -8,19 +8,21 @@ Matches user requirements:
 - Error Handling
 """
 
-import pytest
-import numpy as np
 import json
 from pathlib import Path
+
+import numpy as np
+import pytest
 
 
 def test_imports_and_dependencies():
     """✅ Imports y dependencias"""
     try:
-        import colour_checker_detection.correction_template
-        import rawpy
         import colour
         import cv2
+        import rawpy
+
+        import colour_checker_detection.correction_template
         from colour_checker_detection.detection import detect_colour_checkers_templated
     except ImportError as e:
         pytest.fail(f"Missing dependency: {e}")

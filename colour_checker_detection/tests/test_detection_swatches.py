@@ -7,10 +7,11 @@ Matches user requirements:
 - Edge Cases
 """
 
-import pytest
-import numpy as np
-import cv2
 from pathlib import Path
+
+import cv2
+import numpy as np
+import pytest
 
 
 def test_imports_and_dependencies():

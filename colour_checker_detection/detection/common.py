@@ -280,7 +280,7 @@ def swatch_masks(
     offset_v = height / swatches_v / 2
     for j in np.linspace(offset_v, height - offset_v, swatches_v):
         for i in np.linspace(offset_h, width - offset_h, swatches_h):
-            masks.append(  # noqa: PERF401
+            masks.append(
                 as_int32_array(
                     [
                         j - samples_half,

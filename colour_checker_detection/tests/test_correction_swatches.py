@@ -8,16 +8,18 @@ Matches user requirements:
 - Visualization (6 panels)
 """
 
-import pytest
-import numpy as np
 from pathlib import Path
+
+import numpy as np
+import pytest
 
 
 def test_imports_and_dependencies():
     """✅ Imports y dependencias"""
     try:
-        from colour_checker_detection.correction_swatches import process_image
         import colour
+
+        from colour_checker_detection.correction_swatches import process_image
     except ImportError as e:
         pytest.fail(f"Missing dependency: {e}")
 

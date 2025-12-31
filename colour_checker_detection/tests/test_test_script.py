@@ -1,8 +1,9 @@
 # tests/test_test_script.py
 """Tests básicos para test.py"""
 
-import pytest
 from pathlib import Path
+
+import pytest
 
 
 def test_test_script_exists():
@@ -16,7 +17,7 @@ def test_test_script_exists():
 
 def test_functions_exist():
     """Verifica que las funciones principales existen."""
-    from colour_checker_detection.test import run_benchmark, adapter_yolo_inferencer
+    from colour_checker_detection.test import adapter_yolo_inferencer, run_benchmark
 
     assert callable(run_benchmark)
     assert callable(adapter_yolo_inferencer)
