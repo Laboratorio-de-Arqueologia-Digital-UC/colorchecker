@@ -9,10 +9,12 @@ import pytest
 def test_test_script_exists():
     """Verifica que el módulo test.py existe y se puede importar."""
     try:
-        from colour_checker_detection import test
+        from colour_checker_detection.detection import detect_colour_checkers_templated
+        from colour_checker_detection.test import run_benchmark
     except ImportError:
-        pytest.fail("No se pudo importar colour_checker_detection.test")
-    assert test is not None
+        pytest.fail("No se pudo importar colour_checker_detection.test o detection")
+    assert detect_colour_checkers_templated is not None
+    assert run_benchmark is not None
 
 
 def test_functions_exist():

@@ -203,7 +203,7 @@ def segmentation(
         Inference results.
     """
 
-    from ultralytics import YOLO  # pyright: ignore
+    from ultralytics import YOLO  # pyright: ignore[reportPrivateImportUsage]
     from ultralytics.utils.downloads import download
 
     time_start = perf_counter()
@@ -215,7 +215,7 @@ def segmentation(
         LOGGER.debug('Using "%s" default model.', model)
         if not os.path.exists(model):
             LOGGER.info('Downloading "%s" model...', URL_MODEL_FILE_DEFAULT)
-            download(URL_MODEL_FILE_DEFAULT, ROOT_REPOSITORY)  # pyright: ignore
+            download(URL_MODEL_FILE_DEFAULT, Path(ROOT_REPOSITORY))
 
     if input.endswith((".npy", ".npz")):
         LOGGER.debug('Reading "%s" serialised array...', input)

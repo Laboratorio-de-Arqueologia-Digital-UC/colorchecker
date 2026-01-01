@@ -23,7 +23,7 @@ import rawpy
 from matplotlib import patches
 
 try:
-    from ultralytics import YOLO
+    from ultralytics import YOLO  # pyright: ignore[reportPrivateImportUsage]
 except ImportError:
     YOLO = None
 
@@ -77,7 +77,7 @@ def read_raw_high_res(path: Path, brightness: float = 1.5) -> NDArrayFloat:
 
 
 def adapter_yolo_inferencer(
-    image: NDArrayFloat, model: YOLO, bbox_cache: list | None = None
+    image: NDArrayFloat, model: Any, bbox_cache: list | None = None
 ) -> list[Any]:
     """
     Adaptador para convertir la salida de YOLOv8 al formato esperado por
@@ -269,7 +269,7 @@ def visualize_comparison(
 
                     # Generar centros ideales según topología detectada
                     ideal_centers = get_dynamic_swatch_centers(
-                        w_work, h_work, is_vertical=is_vertical_quad
+                        w_work, h_work, is_vertical=bool(is_vertical_quad)
                     )
 
                     # Definir rectángulo canónico correspondiente
@@ -442,7 +442,7 @@ def run_benchmark(
 
             # Visualizar comparación con Swatches
             visualize_comparison(
-                img_processing,
+                img_processing,  # type: ignore
                 results,
                 inference_bboxes,
                 img_path.name,

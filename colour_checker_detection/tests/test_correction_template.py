@@ -106,4 +106,4 @@ def test_edge_cases_none_input():
 
     # Expect error for None
     with pytest.raises((AttributeError, TypeError, Exception)):
-        detect_colour_checkers_templated(None)
+        detect_colour_checkers_templated(None)  # pyright: ignore

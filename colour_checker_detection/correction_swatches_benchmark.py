@@ -59,7 +59,7 @@ def read_raw_high_res(path: Path, brightness: float = 1.5, linear: bool = False)
                 gamma=(1, 1),
                 no_auto_bright=True,
                 use_camera_wb=True,
-                output_color=rawpy.ColorSpace.raw,
+                output_color=rawpy.ColorSpace.raw,  # type: ignore
                 output_bps=16,
             )
             return as_float_array(img_rgb) / 65535.0
@@ -165,14 +165,20 @@ def run_benchmark_analysis(images_dir: Path):
 
                 if has_seg:
                     data_s = sample_colour_checker(
-                        img_linear, quad_seg, rect_canon, **settings_extract
+                        img_linear,
+                        quad_seg,  # type: ignore
+                        rect_canon,
+                        **settings_extract,
                     )
                     if data_s:
                         rgb_seg = data_s.swatch_colours
 
                 if has_temp:
                     data_t = sample_colour_checker(
-                        img_linear, quad_temp, rect_canon, **settings_extract
+                        img_linear,
+                        quad_temp,  # type: ignore
+                        rect_canon,
+                        **settings_extract,
                     )
                     if data_t:
                         rgb_temp = data_t.swatch_colours

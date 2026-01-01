@@ -87,7 +87,7 @@ def read_raw_high_res(path: Path, brightness: float = 1.5, linear: bool = False)
                 gamma=(1, 1),
                 no_auto_bright=True,
                 use_camera_wb=True,
-                output_color=rawpy.ColorSpace.raw,
+                output_color=rawpy.ColorSpace.raw,  # type: ignore
                 output_bps=16,
             )
             return as_float_array(img_rgb) / 65535.0
@@ -229,7 +229,7 @@ def process_image(img_path: Path, output_dir: Path | None = None):
             )
 
             # Now apply it
-            swatches_corrected = colour.algebra.vector_dot(CCM, swatches_measured)
+            swatches_corrected = colour.algebra.vecmul(CCM, swatches_measured)
 
             # Store in results
             results[method_name] = {
@@ -365,7 +365,7 @@ def process_image(img_path: Path, output_dir: Path | None = None):
                 ax4 = fig.add_subplot(gs[1, 0])
                 ax4.bar(range(24), de00, color="teal")
                 ax4.axhline(
-                    avg_de, color="red", linestyle="--", label=f"Prom: {avg_de:.2f}"
+                    float(avg_de), color="red", linestyle="--", label=f"Prom: {avg_de:.2f}"
                 )
                 ax4.set_title("E: Error Delta E 2000")
                 ax4.set_xlabel("Índice")

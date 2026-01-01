@@ -74,7 +74,7 @@ master_doc = "index"
 project = "colorchecker-pipeline"
 copyright = "2024 Laboratorio de Arqueología Digital UC"
 author = "Laboratorio de Arqueología Digital UC"
-version = f"{package.__major_version__}.{package.__minor_version__}"
+version = package.__version__
 release = package.__version__
 
 exclude_patterns = ["_build"]

@@ -44,6 +44,7 @@ dependencies = [
     "pip-licenses>=5.5.0",
     "yamllint>=1.37.1",
     "pytest>=9.0.2",
+    "pyright>=1.1.407",
 ]
 
 [project.optional-dependencies]

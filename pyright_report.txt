@@ -1,0 +1,22 @@
+g:\colour-checker-detection\colour_checker_detection\correction_swatches.py
+  g:\colour-checker-detection\colour_checker_detection\correction_swatches.py:232:49 - error: "vector_dot" is not a known attribute of module ".algebra" (reportAttributeAccessIssue)
+g:\colour-checker-detection\colour_checker_detection\scripts\inference.py
+  g:\colour-checker-detection\colour_checker_detection\scripts\inference.py:206:29 - error: "YOLO" is not exported from module "ultralytics"
+  ┬á┬áImport from ".yolo" instead (reportPrivateImportUsage)
+  g:\colour-checker-detection\colour_checker_detection\scripts\inference.py:218:46 - error: Argument of type "str" cannot be assigned to parameter "dir" of type "Path" in function "download"
+  ┬á┬á"str" is not assignable to "Path" (reportArgumentType)
+g:\colour-checker-detection\colour_checker_detection\test.py
+  g:\colour-checker-detection\colour_checker_detection\test.py:26:29 - error: "YOLO" is not exported from module "ultralytics"
+  ┬á┬áImport from ".yolo" instead (reportPrivateImportUsage)
+  g:\colour-checker-detection\colour_checker_detection\test.py:79:28 - error: "(" was not closed
+  g:\colour-checker-detection\colour_checker_detection\test.py:80:1 - error: Expected parameter name
+  g:\colour-checker-detection\colour_checker_detection\test.py:80:1 - error: Position-only parameter separator not allowed as first parameter
+  g:\colour-checker-detection\colour_checker_detection\test.py:81:33 - error: Type annotation not supported for this statement (reportInvalidTypeForm)
+  g:\colour-checker-detection\colour_checker_detection\test.py:81:36 - error: Statements must be separated by newlines or semicolons
+  g:\colour-checker-detection\colour_checker_detection\test.py:81:36 - error: Expected expression
+  g:\colour-checker-detection\colour_checker_detection\test.py:446:36 - error: Unnecessary "# type: ignore" comment (reportUnnecessaryTypeIgnoreComment)
+  g:\colour-checker-detection\colour_checker_detection\test.py:476:1 - error: Statements must be separated by newlines or semicolons
+g:\colour-checker-detection\colour_checker_detection\tests\test_test_script.py
+  g:\colour-checker-detection\colour_checker_detection\tests\test_test_script.py:20:72 - error: "run_benchmark" is unknown import symbol (reportAttributeAccessIssue)
+  g:\colour-checker-detection\colour_checker_detection\tests\test_test_script.py:28:47 - error: "run_benchmark" is unknown import symbol (reportAttributeAccessIssue)
+14 errors, 0 warnings, 0 informations
