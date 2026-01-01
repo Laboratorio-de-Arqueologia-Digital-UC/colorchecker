@@ -134,7 +134,7 @@ reportMissingImports = false
 reportMissingModuleSource = false
 reportUnboundVariable = false
 reportUnnecessaryCast = true
-reportUnnecessaryTypeIgnoreComment = true
+reportUnnecessaryTypeIgnoreComment = false
 reportUnsupportedDunderAll = false
 reportUnusedExpression = false
 

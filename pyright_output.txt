@@ -1,0 +1,7 @@
+g:\colour-checker-detection\colour_checker_detection\scripts\inference.py
+  g:\colour-checker-detection\colour_checker_detection\scripts\inference.py:206:29 - error: "YOLO" is not exported from module "ultralytics"
+  ┬á┬áImport from ".yolo" instead (reportPrivateImportUsage)
+g:\colour-checker-detection\colour_checker_detection\test.py
+  g:\colour-checker-detection\colour_checker_detection\test.py:26:29 - error: "YOLO" is not exported from module "ultralytics"
+  ┬á┬áImport from ".yolo" instead (reportPrivateImportUsage)
+2 errors, 0 warnings, 0 informations
