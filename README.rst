@@ -1,6 +1,28 @@
 ColorChecker Pipeline
 =====================
+.. image:: https://github.com/Laboratorio-de-Arqueologia-Digital-UC/colorchecker/actions/workflows/ci.yml/badge.svg
+    :target: https://github.com/Laboratorio-de-Arqueologia-Digital-UC/colorchecker/actions/workflows/ci.yml
+    :alt: CI Status
 
+.. image:: https://codecov.io/gh/Laboratorio-de-Arqueologia-Digital-UC/colorchecker/branch/main/graph/badge.svg
+    :target: https://codecov.io/gh/Laboratorio-de-Arqueologia-Digital-UC/colorchecker
+    :alt: Coverage
+
+.. image:: https://img.shields.io/badge/License-Apache%202.0-blue.svg
+    :target: https://opensource.org/licenses/Apache-2.0
+    :alt: License
+
+.. image:: https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue
+    :alt: Python versions
+
+.. image:: https://img.shields.io/github/issues/Laboratorio-de-Arqueologia-Digital-UC/colorchecker
+    :target: https://github.com/Laboratorio-de-Arqueologia-Digital-UC/colorchecker/issues
+    :alt: Issues
+
+.. image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
+    :target: https://github.com/astral-sh/ruff
+    :alt: Ruff
+    
 **colorchecker-pipeline** es una implementación avanzada para la integración de corrección de color en pipelines de fotogrametría, derivado del proyecto ``colour-checker-detection``. Implementa detección automática, extracción y corrección colorimétrica de cartas **ColorChecker** (optimizado para **ColorChecker Passport post-2014**) a partir de imágenes **RAW**.
 
 Mantenido por el **Laboratorio de Arqueología Digital UC**.
