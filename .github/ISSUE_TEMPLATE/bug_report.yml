@@ -1,0 +1,130 @@
+# .github/ISSUE_TEMPLATE/bug_report.yml
+# Este template aparece cuando alguien crea un issue de tipo "Bug Report"
+
+name: 🐛 Reporte de Bug
+description: Reportar un problema o comportamiento inesperado
+title: "[Bug]: "
+labels: ["bug", "triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Gracias por reportar este bug!
+        
+        Por favor completa la información a continuación para ayudarnos a reproducir y resolver el problema.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripción del problema
+      description: Describe claramente qué está mal y qué esperabas que sucediera.
+      placeholder: |
+        Cuando ejecuto detect_colour_checkers_templated() con una imagen RAW,
+        obtengo un error de "IndexError: list index out of range"...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Pasos para reproducir
+      description: Proporciona un ejemplo mínimo de código que reproduzca el problema
+      placeholder: |
+        ```python
+        import cv2
+        from colour_checker_detection import detect_colour_checkers_templated
+        
+        image = cv2.imread("mi_foto.jpg")
+        result = detect_colour_checkers_templated(image)
+        # Error ocurre aquí ↓
+        print(result[0])
+        ```
+      render: python
+    validations:
+      required: true
+
+  - type: textarea
+    id: error
+    attributes:
+      label: Mensaje de error completo
+      description: Copia y pega el error completo incluyendo el traceback
+      placeholder: |
+        Traceback (most recent call last):
+          File "script.py", line 5, in <module>
+            print(result[0])
+        IndexError: tuple index out of range
+      render: shell
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: Versión de colorchecker-pipeline
+      description: Ejecuta `uv run python -c "import colour_checker_detection; print(colour_checker_detection.__version__)"`
+      placeholder: "0.2.3"
+    validations:
+      required: true
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Versión de Python
+      description: Ejecuta `python --version`
+      placeholder: "Python 3.12.1"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Sistema Operativo
+      multiple: false
+      options:
+        - Windows
+        - macOS
+        - Linux (Ubuntu/Debian)
+        - Linux (Fedora/RHEL)
+        - Linux (Arch)
+        - Otro
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Información adicional del entorno
+      description: |
+        Cualquier otra información relevante sobre tu configuración
+        (GPU, versiones de dependencias críticas, etc.)
+      placeholder: |
+        - GPU: NVIDIA RTX 4090
+        - OpenCV: 4.11.0
+        - NumPy: 2.4.0
+        - Instalado via: uv / pip
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Verificaciones
+      description: Antes de enviar, verifica lo siguiente
+      options:
+        - label: Busqué en los issues existentes y no encontré uno similar
+          required: true
+        - label: Estoy usando la última versión de colorchecker-pipeline
+          required: false
+        - label: Probé con una imagen de prueba diferente
+          required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Contexto adicional
+      description: ¿Algo más que debamos saber?
+      placeholder: |
+        Este error solo ocurre con imágenes RAW de mi cámara Canon EOS R5.
+        Con JPEGs funciona correctamente.

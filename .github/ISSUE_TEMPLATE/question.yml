@@ -1,0 +1,47 @@
+# ========================================
+# .github/ISSUE_TEMPLATE/question.yml
+# ========================================
+
+name: ❓ Pregunta
+description: Hacer una pregunta sobre el uso o funcionamiento
+title: "[Question]: "
+labels: ["question"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Hacer una pregunta
+        
+        Si tienes dudas sobre cómo usar colorchecker-pipeline.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Tu pregunta
+      description: Sé lo más específico posible
+      placeholder: |
+        ¿Cómo puedo obtener los valores RGB en espacio sRGB en vez de AdobeRGB?
+        
+        He intentado...
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexto
+      description: ¿Qué estás intentando lograr?
+      placeholder: |
+        Estoy procesando fotos de documentos históricos y necesito
+        valores RGB compatibles con navegadores web...
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Verificaciones
+      options:
+        - label: Leí la documentación en docs/
+          required: true
+        - label: Busqué en issues cerrados
+          required: true

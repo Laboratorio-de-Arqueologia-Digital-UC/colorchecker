@@ -1,0 +1,66 @@
+# ========================================
+# .github/ISSUE_TEMPLATE/feature_request.yml
+# ========================================
+
+name: ✨ Solicitud de Feature
+description: Proponer una nueva funcionalidad
+title: "[Feature]: "
+labels: ["enhancement"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Proponer una nueva funcionalidad
+        
+        Describe qué te gustaría ver implementado en colorchecker-pipeline.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: ¿Qué problema resolvería esta funcionalidad?
+      description: Describe el caso de uso o problema que enfrentas
+      placeholder: |
+        Actualmente no puedo procesar múltiples imágenes en un solo llamado.
+        Tengo que hacer un loop manual, lo cual es ineficiente para...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solución propuesta
+      description: Describe cómo te gustaría que funcionara
+      placeholder: |
+        Me gustaría una función tipo:
+        
+        ```python
+        results = detect_colour_checkers_batch([img1, img2, img3])
+        ```
+        
+        Que procese todas las imágenes en paralelo y retorne...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas
+      description: ¿Exploraste otras soluciones?
+      placeholder: |
+        Actualmente hago:
+        ```python
+        from multiprocessing import Pool
+        with Pool() as p:
+            results = p.map(detect_colour_checkers_templated, images)
+        ```
+        Pero sería más elegante si...
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: ¿Estarías dispuesto a contribuir con esta funcionalidad?
+      options:
+        - label: Sí, puedo enviar un Pull Request
+        - label: Necesitaría guía para implementarlo
+        - label: Solo estoy sugiriendo la idea

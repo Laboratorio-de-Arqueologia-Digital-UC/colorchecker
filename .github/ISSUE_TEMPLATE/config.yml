@@ -1,0 +1,20 @@
+# ========================================
+# .github/ISSUE_TEMPLATE/config.yml
+# ========================================
+
+# Configuración del sistema de issues
+
+blank_issues_enabled: false
+
+contact_links:
+  - name: 💬 Discussions / Foro
+    url: https://github.com/Laboratorio-de-Arqueologia-Digital-UC/colorchecker/discussions
+    about: Para preguntas generales, ideas y discusiones
+
+  - name: 📚 Documentación
+    url: https://github.com/Laboratorio-de-Arqueologia-Digital-UC/colorchecker/tree/main/docs
+    about: Revisa la documentación oficial
+
+  - name: 📧 Contacto directo
+    url: mailto:victor.mendez@uc.cl
+    about: Para consultas privadas o colaboraciones
