@@ -22,7 +22,7 @@ ColorChecker Pipeline
 .. image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
     :target: https://github.com/astral-sh/ruff
     :alt: Ruff
-    
+
 **colorchecker-pipeline** es una implementación avanzada para la integración de corrección de color en pipelines de fotogrametría, derivado del proyecto ``colour-checker-detection``. Implementa detección automática, extracción y corrección colorimétrica de cartas **ColorChecker** (optimizado para **ColorChecker Passport post-2014**) a partir de imágenes **RAW**.
 
 Mantenido por el **Laboratorio de Arqueología Digital UC**.
@@ -171,6 +171,66 @@ Los resultados se generan en ``test_results/[TIMESTAMP]/``. El script principal 
 *   **Panel D (Referencia)**: Valores teóricos ideales de la carta ColorChecker (Post-2014) en AdobeRGB, ajustados al iluminante D65.
 *   **Panel E (Error)**: Gráfico de barras mostrando el error Delta E 2000 para cada parche individual, junto con el promedio (Avg) y máximo (Max).
 *   **Panel F (Resultado Final)**: Previsualización de la imagen completa corregida colorimétricamente.
+
+Arquitectura del Software
+-------------------------
+
+Visión General
+~~~~~~~~~~~~~~
+
+El proyecto sigue una arquitectura de capas:
+
+.. code-block:: text
+
+    ┌─────────────────────────────────────┐
+    │     Scripts de Usuario (CLI)       │
+    └─────────────┬───────────────────────┘
+                  │
+    ┌─────────────▼───────────────────────┐
+    │  Workflows de Aplicación            │
+    │  • correction_template.py           │
+    │  • correction_swatches.py           │
+    └─────────────┬───────────────────────┘
+                  │
+    ┌─────────────▼───────────────────────┐
+    │  Capa de Dominio                    │
+    │  ┌──────────┐  ┌─────────────────┐ │
+    │  │Detection │  │  Correction     │ │
+    │  │• Templated  │  • CCM Calc     │ │
+    │  │• Segment.│  │  • White Bal    │ │
+    │  └──────────┘  └─────────────────┘ │
+    └─────────────┬───────────────────────┘
+                  │
+    ┌─────────────▼───────────────────────┐
+    │  Infraestructura                    │
+    │  NumPy • OpenCV • Colour Science    │
+    └─────────────────────────────────────┘
+
+Módulos Principales
+~~~~~~~~~~~~~~~~~~~
+
+**Detection (``colour_checker_detection/detection/``)**
+
+* ``templated.py``: Detección robusta por plantillas (Apache 2.0)
+* ``segmentation.py``: Método clásico de segmentación (BSD-3)
+* ``inference.py``: Deep Learning con YOLOv8 (AGPL-3.0, opcional)
+
+**Utilities (``colour_checker_detection/utilities/``)**
+
+* Operaciones geométricas
+* Transformaciones de color
+* I/O helpers
+
+Flujo de Datos
+~~~~~~~~~~~~~~
+
+1. **Entrada**: Imagen RAW → rawpy → RGB lineal 16-bit
+2. **Detección**: Template matching → Geometría refinada
+3. **Extracción**: Muestra de swatches (24x3 RGB)
+4. **Corrección**: Cálculo CCM → Aplicación → AdobeRGB D65
+5. **Salida**: Imagen corregida + Reporte JSON
+
+Para documentación completa de arquitectura, ver ``docs/ARCHITECTURE.md``.
 
 Licencia y Cumplimiento
 -----------------------

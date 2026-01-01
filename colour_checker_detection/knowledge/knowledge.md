@@ -601,3 +601,44 @@ El archivo `.github/workflows/ci.yml` se configuró para:
 1.  **Dependencias de Sistema**: `sudo apt-get install -y libgl1-mesa-glx`.
 2.  **Checkout LFS**: `lfs: true` para traer las imágenes de prueba.
 3.  **Strict Mode**: Se eliminó `continue-on-error: true`. Un pipeline de CI debe fallar (rojo) si hay errores de linting o tests fallidos; permitir que continúe ("verde falso") oculta regresiones críticas.
+
+---
+
+## 28. Discrepancias de Tipado (Pyright) CI vs Local
+
+### Problema
+Una importación opcional o protegida por `try-except`, como `ultralytics`, puede generar comportamientos divergentes:
+- **Local**: `ultralytics` no exporta explícitamente `YOLO`, lo que hace que Pyright marque el uso como privado (`reportPrivateImportUsage`). Esto *requiere* un `# pyright: ignore`.
+- **CI**: El entorno puede resolver la importación de manera diferente (u otra versión), considerando el ignore como **"Innecesario"**.
+
+Esto crea un conflicto irresoluble:
+- Si se pone el ignore, falla en CI por `reportUnnecessaryTypeIgnoreComment`.
+- Si se quita, falla en Local por `reportPrivateImportUsage`.
+
+### Solución
+Desactivar la comprobación global de ignores innecesarios en `pyproject.toml`. Esto es una concesión aceptable para mantener la consistencia en entornos heterogéneos:
+
+```toml
+[tool.pyright]
+reportUnnecessaryTypeIgnoreComment = false
+```
+
+---
+
+## 29. Sintaxis Estricta de ReStructuredText (RST) para PyPI
+
+### Problema
+Herramientas como `twine check` (y el renderizador de PyPI) son **estrictas** con la sintaxis RST, mucho más que los renderizadores locales o de GitHub.
+- **Indentación**: Los bloques de código (`.. code-block::`) y las listas anidadas *requieren* líneas en blanco circundantes para ser interpretados correctamente.
+- **Error Común**: `Unexpected indentation` o `Block quote ends without a blank line`. Esto suele significar que pegaste una lista o un bloque de código inmediatamente debajo de otro elemento sin dejar un espacio vertical.
+
+### Regla de Oro
+Siempre rodear con líneas en blanco:
+1.  Antes y después de `.. code-block::`.
+2.  Antes y después de cualquier lista anidada (sub-bullets).
+
+```rst
+*   Item principal:
+
+    *   Sub-item (Nota el espacio arriba y la indentación al nivel del texto padre)
+```

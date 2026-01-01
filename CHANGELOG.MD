@@ -9,6 +9,10 @@ Versionado: [Semantic Versioning](https://semver.org/lang/es/)
 - Tests estabilizados
 - Commitizen para changelog automático
 
+### Fix
+- **CI/CD**: Solucionado error de sintaxis en `README.rst` (indentación) que impedía la validación de metadatos en PyPI.
+- **Pyright**: Solucionada discrepancia de configuración local vs CI desactivando `reportUnnecessaryTypeIgnoreComment` para permitir ignores condicionales en importaciones opcionales (`ultralytics`).
+
 ## [0.2.3] - 2024-12-31
 
 ### Añadido
