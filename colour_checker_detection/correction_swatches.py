@@ -365,7 +365,10 @@ def process_image(img_path: Path, output_dir: Path | None = None):
                 ax4 = fig.add_subplot(gs[1, 0])
                 ax4.bar(range(24), de00, color="teal")
                 ax4.axhline(
-                    float(avg_de), color="red", linestyle="--", label=f"Prom: {avg_de:.2f}"
+                    float(avg_de),
+                    color="red",
+                    linestyle="--",
+                    label=f"Prom: {avg_de:.2f}",
                 )
                 ax4.set_title("E: Error Delta E 2000")
                 ax4.set_xlabel("Índice")
