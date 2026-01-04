@@ -660,3 +660,31 @@ Además del JSON y PNG, ahora se generan archivos para integración directa en s
 2.  **Matriz CCM (.txt)**: La matriz de 3x3 calculada explícitamente (`Cheung 2004`) guardada en texto plano para fácil lectura por otros scripts (NumPy/Matlab).
 
 ```
+
+---
+
+## 31. Deprecación de `vector_dot` y Linting Estricto
+
+### Deprecación de `colour.algebra.vector_dot`
+En versiones recientes de `colour-science` (o en preparaciones para futuras releases), métodos auxiliares como `colour.algebra.vector_dot` pueden ser removidos o marcados como desconocidos por `pyright`, ya que son wrappers simples alrededor de operaciones de NumPy.
+
+**Problema**: `pyright` reporta `reportAttributeAccessIssue` al intentar usar `colour.algebra.vector_dot`.
+
+**Solución**: Reemplazar su uso con `np.einsum` (Einstein Summation), que es más explícito, rápido y estándar en computación científica.
+
+*   **Caso: Multiplicación Matriz (3x3) por Vectores (Nx3)**
+    ```python
+    # Antes
+    corrected = colour.algebra.vector_dot(M, measured)
+    
+    # Después (Einsum)
+    # "ij" -> Matriz M (3x3)
+    # "...j" -> Datos de entrada (cualquier forma terminada en 3 canales)
+    # "...i" -> Salida manteniendo la forma
+    corrected = np.einsum("ij,...j->...i", M, measured)
+    ```
+
+### Import Sorting y Formato (Ruff)
+El proyecto usa `ruff` para asegurar calidad de código. Un error común es `I001 Import block is un-sorted`.
+-   **Solución**: Ejecutar siempre `uv run ruff check --fix .` antes de commitear. Esto ordena automáticamente las importaciones según PEP 8 (Standard, Third-party, Local).
+

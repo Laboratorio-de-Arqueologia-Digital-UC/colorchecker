@@ -3,6 +3,16 @@ Colour - Checker Detection - Correction Swatches
 ================================================
 
 Defines the scripts for colour checker detection and correction.
+
+Features:
+- Detects ColorChecker Classic using template matching (Post-2014 reference).
+- Calculates Color Correction Matrix (CCM) from Linear values to AdobeRGB (D65).
+- Exports results in multiple formats:
+    - JSON: Comprehensive report with coordinates, RGB values and Delta E metrics.
+    - CCM (.txt): 3x3 Correction Matrix in plain text.
+    - 3D LUT (.cube): 33x33x33 Lookup Table for external editing.
+    - DCP (.dcp): Digital Camera Profile (XML + Binary via dcpTool).
+- Visualization: Generates a 6-panel debug image (Detection, Measured, Corrected, Reference, Error, Full Image).
 """
 
 from __future__ import annotations
@@ -273,7 +283,7 @@ def main(images_dir: Path | None = None, output_dir: Path | None = None):
 
             # Aplicar la corrección usando la matriz calculada
             # Nota: colour.algebra.vector_dot aplica M a los vectores RGB
-            swatches_corrected = colour.algebra.vector_dot(M, swatches_measured)
+            swatches_corrected = np.einsum("ij,...j->...i", M, swatches_measured)
 
             # --- EVALUACIÓN DELTA E ---
             # Clipping para evaluación visual (0-1)
@@ -352,7 +362,7 @@ def main(images_dir: Path | None = None, output_dir: Path | None = None):
                     name=f"CCM for {img_path.name}",
                     size=size,
                 )
-                LUT.table = colour.algebra.vector_dot(M, LUT.table)
+                LUT.table = np.einsum("ij,...j->...i", M, LUT.table)
                 # Clip para asegurar validez
                 LUT.table = np.clip(LUT.table, 0, 1)
 
@@ -512,7 +522,7 @@ def main(images_dir: Path | None = None, output_dir: Path | None = None):
             # Flatten, dot, reshape
             h_im, w_im, c_im = img_linear.shape
             img_lin_flat = img_linear.reshape(-1, 3)
-            img_corr_flat = colour.algebra.vector_dot(M, img_lin_flat)
+            img_corr_flat = np.einsum("ij,...j->...i", M, img_lin_flat)
             img_corrected_full = img_corr_flat.reshape(h_im, w_im, c_im)
 
             ax5.imshow(np.power(np.clip(img_corrected_full, 0, 1), 1 / 2.2))
