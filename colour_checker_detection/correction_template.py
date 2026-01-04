@@ -17,7 +17,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import rawpy
-from PIL import ImageCms 
+from PIL import ImageCms
 from colour.characterisation import CCS_COLOURCHECKERS
 from colour.difference import delta_E
 from colour.models import RGB_COLOURSPACES
@@ -371,7 +371,9 @@ def main(images_dir: Path | None = None, output_dir: Path | None = None):
                 # Como fallback robusto, omitiremos la creacion binaria compleja si no es vital,
                 # pero el usuario lo pidió. Haremos un "Best Effort" informando si falla.
                 # Para un perfil de entrada (Input Profile), necesitamos tags específicos.
-                LOGGER.warning("    -> Generación binaria nativa de ICC complejo limitada en Python puro.")
+                LOGGER.warning(
+                    "    -> Generación binaria nativa de ICC complejo limitada en Python puro."
+                )
                 # No hay metodo directo 'write_icc(matrix)' en Pillow. Se requiere lcms2 bindings completos o manipular bytes.
                 # Por ahora, guardamos un texto informativo o saltamos.
                 # SI el usuario tiene algun perfil base, se podria editar, pero no tenemos uno.
@@ -394,9 +396,9 @@ def main(images_dir: Path | None = None, output_dir: Path | None = None):
                 xml_content = f"""<dcpData>
     <ProfileName>{base_name}</ProfileName>
     <ColorMatrix1 Rows="3" Cols="3">
-        {M[0,0]:.6f} {M[0,1]:.6f} {M[0,2]:.6f}
-        {M[1,0]:.6f} {M[1,1]:.6f} {M[1,2]:.6f}
-        {M[2,0]:.6f} {M[2,1]:.6f} {M[2,2]:.6f}
+        {M[0, 0]:.6f} {M[0, 1]:.6f} {M[0, 2]:.6f}
+        {M[1, 0]:.6f} {M[1, 1]:.6f} {M[1, 2]:.6f}
+        {M[2, 0]:.6f} {M[2, 1]:.6f} {M[2, 2]:.6f}
     </ColorMatrix1>
     <CalibrationIlluminant1>21</CalibrationIlluminant1> <!-- D65 -->
 </dcpData>"""
@@ -411,18 +413,21 @@ def main(images_dir: Path | None = None, output_dir: Path | None = None):
                 LOGGER.info("    -> XML DCP guardado.")
 
                 # LLAMAR A DCPTOOL EXTERNO
-                dcp_tool_path = Path("g:/colour-checker-detection/external/dcptool/dcpTool.exe")
+                dcp_tool_path = Path(
+                    "g:/colour-checker-detection/external/dcptool/dcpTool.exe"
+                )
                 if dcp_tool_path.exists():
                     cmd = [str(dcp_tool_path), "-c", str(xml_path), str(dcp_path)]
                     LOGGER.info(f"    Ejecutando dcpTool: {' '.join(cmd)}")
                     subprocess.run(cmd, check=True, capture_output=True)
                     LOGGER.info("    -> .dcp Generado Exitosamente.")
                 else:
-                    LOGGER.error(f"    No se encontró dcpTool en {dcp_tool_path}. Solo se guardó el XML.")
+                    LOGGER.error(
+                        f"    No se encontró dcpTool en {dcp_tool_path}. Solo se guardó el XML."
+                    )
 
             except Exception as e:
                 LOGGER.error(f"Error generando DCP: {e}")
-
 
             # 7. Visualización (Updated to reflect Corrected logic)
             fig = plt.figure(figsize=(18, 10))
