@@ -1,0 +1,9 @@
+<dcpData>
+    <ProfileName>correction_Templated_DSC05274</ProfileName>
+    <ColorMatrix1 Rows="3" Cols="3">
+        18.484687 -4.059124 -2.477104
+        -1.332907 18.825207 -6.687295
+        -0.378775 -3.160978 14.795527
+    </ColorMatrix1>
+    <CalibrationIlluminant1>21</CalibrationIlluminant1> <!-- D65 -->
+</dcpData>

@@ -641,4 +641,22 @@ Siempre rodear con líneas en blanco:
 *   Item principal:
 
     *   Sub-item (Nota el espacio arriba y la indentación al nivel del texto padre)
+
+---
+
+## 30. Generación de Perfiles de Cámara (DCP) y LUTs
+
+### Generación de Binarios DCP
+Python no cuenta con librerías nativas mantenidas para escribir archivos binarios `.dcp` (Digital Camera Profile). Para solucionar esto, hemos integrado **dcpTool** (GPL) como una herramienta externa.
+- **Ubicación**: `external/dcptool/dcpTool.exe`
+- **Flujo**:
+    1.  El script genera un archivo `.xml` (texto) que describe la matriz de calibración (`<ColorMatrix1>`).
+    2.  Invoca a `dcpTool.exe` mediante `subprocess` para compilar el XML a DCP binario.
+- **Licencia**: dcpTool se distribuye bajo GPL. Su uso aquí como ejecutable externo no "contamina" el código Python bajo licencia AGPL/GPL, pero el binario distribuido en `external/` debe respetar los términos de distribución de la GPL.
+
+### Nuevos Formatos de Exportación
+Además del JSON y PNG, ahora se generan archivos para integración directa en software de edición:
+1.  **3D LUT (.cube)**: Cubo de 33x33x33 generado con `colour.LUT3D`. Compatible con DaVinci Resolve, Premiere, Nuke (standard industry format).
+2.  **Matriz CCM (.txt)**: La matriz de 3x3 calculada explícitamente (`Cheung 2004`) guardada en texto plano para fácil lectura por otros scripts (NumPy/Matlab).
+
 ```

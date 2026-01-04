@@ -1,0 +1,9 @@
+<dcpData>
+    <ProfileName>correction_Templated_color_checker_1</ProfileName>
+    <ColorMatrix1 Rows="3" Cols="3">
+        14.334428 -5.762344 0.598621
+        -1.784757 17.830506 -5.829411
+        -0.422123 -4.118489 14.177198
+    </ColorMatrix1>
+    <CalibrationIlluminant1>21</CalibrationIlluminant1> <!-- D65 -->
+</dcpData>
