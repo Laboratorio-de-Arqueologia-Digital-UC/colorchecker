@@ -45,6 +45,7 @@ dependencies = [
     "yamllint>=1.37.1",
     "pytest>=9.0.2",
     "pyright>=1.1.407",
+    "pillow>=11.0.0",
 ]
 
 [project.optional-dependencies]
@@ -195,5 +196,5 @@ version_files = [
     "pyproject.toml:version"
 ]
 update_changelog_on_bump = true
-changelog_file = "CHANGELOG.md"
+changelog_file = "CHANGELOG.MD"
 changelog_incremental = true

@@ -46,8 +46,28 @@ Características Principales
 
 *   **Extracción de 16-bits (Camera Space)**: Lectura directa de datos radiométricos lineales usando ``rawpy``, evitando procesamientos gamma intermedios.
 *   **Corrección CCM (Cheung 2004)**: Cálculo de matrices de transformación colorimétrica precisas utilizando la librería ``colour-science``.
+*   **Exportación Multi-Formato**: Generación automática de perfiles para integración profesional:
+    *   **DCP** (Digital Camera Profile) para Adobe Lightroom/Camera Raw (vía **dcpTool**).
+    *   **3D LUT** (.cube) para DaVinci Resolve/Premiere.
+    *   **CCM** (Texto) y JSON para análisis científico.
 *   **Normalización de Punto Blanco**: Algoritmo propio para asegurar que las referencias y el resultado final sean perfectamente neutros (R=G=B) en parches grises, eliminando tintes verdosos.
 *   **Visualización Técnica de 6 Paneles**: Generación automática de reportes visuales detallados.
+
+Créditos y Base
+---------------
+
+Este proyecto se basa fuertemente en el excelente trabajo de **Colour Developers** y su librería `colour-checker-detection`.
+*   **Proyecto Original**: `https://github.com/colour-science/colour-checker-detection`
+*   Reconocemos y agradecemos su contribución fundamental al campo de la ciencia del color open source. 
+*   Nuestra implementación extiende su base para soportar flujos de trabajo específicos de Arqueología Digital, imágenes RAW de alta resolución y nuevos formatos de exportación.
+
+Herramientas Externas y Licencias
+---------------------------------
+
+*   **dcpTool**: Se utiliza el binario de `dcpTool` (ubicado en `external/dcptool`) para la generación de archivos .dcp.
+    *   **Licencia**: GNU General Public License (GPL).
+    *   Web: `http://dcptool.sourceforge.net/`
+    *   Nota: `dcpTool` se ejecuta como un proceso externo y no se vincula estáticamente con el código Python del proyecto.
 
 Dependencias e Instalación
 --------------------------
