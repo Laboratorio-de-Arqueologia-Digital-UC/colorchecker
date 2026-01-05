@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import unittest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import rawpy
+
 from colour_checker_detection.io import load_raw_linear, load_raw_visual
 
 
@@ -43,7 +44,7 @@ class TestIO(unittest.TestCase):
             gamma=(1, 1),
             no_auto_bright=True,
             use_camera_wb=True,
-            output_color=rawpy.ColorSpace.raw,
+            output_color=rawpy.ColorSpace.raw,  # type: ignore
             output_bps=16,
         )
 
