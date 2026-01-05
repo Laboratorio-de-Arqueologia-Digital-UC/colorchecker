@@ -35,7 +35,7 @@ class TestIO(unittest.TestCase):
 
         # Assertions
         self.assertEqual(wb, [2.0, 1.0, 1.5, 1.0])
-        self.assertEqual(img.dtype, np.float64) # Should be float after div
+        self.assertEqual(img.dtype, np.float64)  # Should be float after div
         self.assertTrue(np.all(img >= 0) and np.all(img <= 1.0))
 
         # Check rawpy call args
@@ -44,7 +44,7 @@ class TestIO(unittest.TestCase):
             no_auto_bright=True,
             use_camera_wb=True,
             output_color=rawpy.ColorSpace.raw,
-            output_bps=16
+            output_bps=16,
         )
 
     @patch("colour_checker_detection.io.rawpy.imread")
@@ -70,10 +70,9 @@ class TestIO(unittest.TestCase):
         self.assertTrue(np.all(img >= 0) and np.all(img <= 1.0))
 
         mock_raw.postprocess.assert_called_with(
-            use_camera_wb=True,
-            bright=2.0,
-            no_auto_bright=True
+            use_camera_wb=True, bright=2.0, no_auto_bright=True
         )
+
 
 if __name__ == "__main__":
     unittest.main()

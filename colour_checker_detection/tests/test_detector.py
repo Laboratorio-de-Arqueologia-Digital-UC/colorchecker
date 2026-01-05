@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import unittest
@@ -17,6 +16,7 @@ class TestDetector(unittest.TestCase):
         detect_chart(dummy_image, **dummy_kwargs)
 
         mock_detect.assert_called_once_with(dummy_image, **dummy_kwargs)
+
 
 if __name__ == "__main__":
     unittest.main()

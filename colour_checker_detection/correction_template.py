@@ -114,15 +114,14 @@ def get_transf_matrix_and_centers(w, h, quad):
 def run_batch_process(
     images_dir: Path | str,
     output_dir: Path | str | None = None,
-    dcp_tool_path: Path | str | None = None
+    dcp_tool_path: Path | str | None = None,
 ) -> list[dict]:
-
     if images_dir is None:
         raise ValueError("images_dir argument is mandatory.")
 
     images_dir = Path(images_dir)
     if not images_dir.exists():
-         raise FileNotFoundError(f"Images directory {images_dir} not found.")
+        raise FileNotFoundError(f"Images directory {images_dir} not found.")
 
     # BUSCAR IMAGENES (.CR2, .ARW, .RAF)
     img_files = (
@@ -151,7 +150,9 @@ def run_batch_process(
             dcp_tool_path = Path(found)
             LOGGER.info(f"dcpTool encontrado en PATH: {dcp_tool_path}")
         else:
-            LOGGER.warning("dcpTool no encontrado en PATH. La generación de DCP binarios se omitirá.")
+            LOGGER.warning(
+                "dcpTool no encontrado en PATH. La generación de DCP binarios se omitirá."
+            )
 
     batch_results = []
 
@@ -311,7 +312,7 @@ def run_batch_process(
                 json_data = {
                     "image": img_path.name,
                     "method": method_name,
-                    "wb_as_shot": as_shot_wb, # Report WB as requested
+                    "wb_as_shot": as_shot_wb,  # Report WB as requested
                     "reference": "ColorChecker24 - After November 2014 (D65)",
                     "ccm": M.tolist(),
                     "swatches": [],
@@ -370,13 +371,13 @@ def run_batch_process(
             # 5. DCP (XML + Binary via dcpTool)
             LOGGER.info("    Generando DCP (Camera Profile)...")
             try:
-                xml_content = f"\"<dcpData>\n    <ProfileName>{base_name}</ProfileName>\n    <ColorMatrix1 Rows=\"3\" Cols=\"3\">\n        {M[0, 0]:.6f} {M[0, 1]:.6f} {M[0, 2]:.6f}\n        {M[1, 0]:.6f} {M[1, 1]:.6f} {M[1, 2]:.6f}\n        {M[2, 0]:.6f} {M[2, 1]:.6f} {M[2, 2]:.6f}\n    </ColorMatrix1>\n    <CalibrationIlluminant1>21</CalibrationIlluminant1>\n</dcpData>\""
+                xml_content = f'"<dcpData>\n    <ProfileName>{base_name}</ProfileName>\n    <ColorMatrix1 Rows="3" Cols="3">\n        {M[0, 0]:.6f} {M[0, 1]:.6f} {M[0, 2]:.6f}\n        {M[1, 0]:.6f} {M[1, 1]:.6f} {M[1, 2]:.6f}\n        {M[2, 0]:.6f} {M[2, 1]:.6f} {M[2, 2]:.6f}\n    </ColorMatrix1>\n    <CalibrationIlluminant1>21</CalibrationIlluminant1>\n</dcpData>"'
 
                 xml_path = output_dir / f"{base_name}.xml"
                 dcp_path_out = output_dir / f"{base_name}.dcp"
 
                 # Re-using f-string properly
-                xml_content = f'''<dcpData>
+                xml_content = f"""<dcpData>
     <ProfileName>{base_name}</ProfileName>
     <ColorMatrix1 Rows="3" Cols="3">
         {M[0, 0]:.6f} {M[0, 1]:.6f} {M[0, 2]:.6f}
@@ -384,7 +385,7 @@ def run_batch_process(
         {M[2, 0]:.6f} {M[2, 1]:.6f} {M[2, 2]:.6f}
     </ColorMatrix1>
     <CalibrationIlluminant1>21</CalibrationIlluminant1>
-</dcpData>'''
+</dcpData>"""
 
                 with open(xml_path, "w", encoding="utf-8") as f:
                     f.write(xml_content)
@@ -396,7 +397,9 @@ def run_batch_process(
                     subprocess.run(cmd, check=True, capture_output=True)
                     LOGGER.info("    -> .dcp Generado Exitosamente.")
                 else:
-                    LOGGER.info("    dcpTool no disponible o no encontrado. DCP binario omitido.")
+                    LOGGER.info(
+                        "    dcpTool no disponible o no encontrado. DCP binario omitido."
+                    )
 
             except Exception as e:
                 LOGGER.error(f"Error generando DCP: {e}")
@@ -500,11 +503,20 @@ def run_batch_process(
 
     return batch_results
 
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Colour Checker Detection & Correction Batch Process")
-    parser.add_argument("--images_dir", type=str, required=True, help="Directory containing RAW images")
-    parser.add_argument("--output_dir", type=str, default=None, help="Directory to save results")
-    parser.add_argument("--dcp_tool_path", type=str, default=None, help="Path to dcpTool.exe")
+    parser = argparse.ArgumentParser(
+        description="Colour Checker Detection & Correction Batch Process"
+    )
+    parser.add_argument(
+        "--images_dir", type=str, required=True, help="Directory containing RAW images"
+    )
+    parser.add_argument(
+        "--output_dir", type=str, default=None, help="Directory to save results"
+    )
+    parser.add_argument(
+        "--dcp_tool_path", type=str, default=None, help="Path to dcpTool.exe"
+    )
 
     args = parser.parse_args()
 

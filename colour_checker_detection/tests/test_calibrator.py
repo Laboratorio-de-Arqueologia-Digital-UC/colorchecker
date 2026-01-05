@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import unittest
@@ -30,6 +29,7 @@ class TestCalibrator(unittest.TestCase):
 
         # Should be Identity matrix
         np.testing.assert_array_almost_equal(M, np.eye(3), decimal=5)
+
 
 if __name__ == "__main__":
     unittest.main()

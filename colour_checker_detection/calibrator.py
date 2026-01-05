@@ -1,4 +1,3 @@
-
 import colour
 import numpy as np
 
@@ -16,9 +15,9 @@ def calculate_ccm(measured_rgb: np.ndarray, reference_rgb: np.ndarray) -> np.nda
         measured_rgb, reference_rgb
     )
 
+
 def calculate_wb_multipliers(
-    raw_image: np.ndarray,
-    grey_patches_coords: list
+    raw_image: np.ndarray, grey_patches_coords: list
 ) -> list[float]:
     """
     Calcula los multiplicadores RGB necesarios para neutralizar los grises.
