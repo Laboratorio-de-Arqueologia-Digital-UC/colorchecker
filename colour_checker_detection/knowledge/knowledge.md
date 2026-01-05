@@ -199,12 +199,12 @@ def adapter_yolo_inferencer(image, model, ...):
 ```text
 colour-checker-detection/
 ├── colour_checker_detection/
-│   ├── detection/          # Lógica Core
-│   │   ├── common.py       # Utilidades y Constantes (SETTINGS_, reformat_image)
-│   │   ├── inference.py    # Wrapper para YOLO (Llama a scripts/inference.py)
-│   │   ├── segmentation.py # Detección clásica (OpenCV)
-│   │   ├── templated.py    # Matching por plantillas (sklearn)
-│   │   └── plotting.py     # Funciones de visualización
+│   ├── detection/          # Lógica Core de Detección (Legacy + Wrapper)
+│   │   ├── ...
+│   ├── calibrator.py       # [NEW] Lógica Matemática Pura (CCM, WB)
+│   ├── detector.py         # [NEW] Wrapper unificado de detección 
+│   ├── io.py               # [NEW] Lectura RAW (Linear/Visual) y manejo de WB
+│   ├── correction_template.py # Script principal de producción (Refactorizado)
 │   ├── scripts/
 │   │   └── inference.py    # CLI Script externo para aislar dependencia YOLO AGPL
 │   ├── models/             # Pesos .pt de YOLO
@@ -688,3 +688,34 @@ En versiones recientes de `colour-science` (o en preparaciones para futuras rele
 El proyecto usa `ruff` para asegurar calidad de código. Un error común es `I001 Import block is un-sorted`.
 -   **Solución**: Ejecutar siempre `uv run ruff check --fix .` antes de commitear. Esto ordena automáticamente las importaciones según PEP 8 (Standard, Third-party, Local).
 
+
+---
+
+## 32. Refactorización para Modularidad y Pipeline de Producción
+
+### Problema: Arquitectura Monolítica y Scripts Standalone
+El script `main.py` (ahora `correction_template.py`) fue diseñado originalmente como una prueba de concepto monolítica.
+- **Paths Hardcodeados**: Dependencia del disco `G:/`.
+- **Acoplamiento**: Lógica matemática (`Cheung2004`) y de I/O (`rawpy`) mezclada con la lógica de control.
+- **"Punto Ciego" del WB**: El uso implícito de `use_camera_wb=True` impedía conocer qué multiplicadores se estaban usando realmente, haciendo imposible aplicar la misma corrección a un lote de imágenes de forma consistente.
+
+### Solución: Arquitectura de Paquete
+Se refactorizó el código extrayendo la lógica crítica a módulos especializados puros:
+
+1.  **`calibrator.py`**:
+    -   Encapsula la matemática de corrección de color.
+    -   Funciones puras: `calculate_ccm(measured, reference)`.
+    -   Sin efectos secundarios ni I/O.
+
+2.  **`io.py`**:
+    -   Centraliza la lectura de RAWs con `rawpy`.
+    -   **Mejora Crítica**: `load_raw_linear` ahora retorna explícitamente `(image, as_shot_wb)`. Esto permite reportar y reutilizar los multiplicadores de balance de blancos originales de la toma.
+
+3.  **`detector.py`**:
+    -   Wrapper unificado para las funciones de detección.
+    -   Simplifica la API pública del paquete.
+
+### Impacto en Producción
+-   **Eliminación de Hardcoding**: `correction_template.py` ahora acepta argumentos CLI (`--images_dir`, `--output_dir`, `--dcp_tool_path`).
+-   **Trazabilidad**: El reporte JSON ahora incluye el campo `wb_as_shot`, vital para la reproducibilidad científica.
+-   **Testabilidad**: La nueva estructura permite tests unitarios aislados con mocks para `io` y `calibrator`, mejorando la cobertura y robustez del CI.

@@ -17,7 +17,10 @@ Features:
 
 from __future__ import annotations
 
+import argparse
+import json
 import logging
+import shutil
 import subprocess
 from datetime import datetime
 from pathlib import Path
@@ -26,20 +29,16 @@ import colour
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import rawpy
 from colour.characterisation import CCS_COLOURCHECKERS
 from colour.difference import delta_E
 from colour.models import RGB_COLOURSPACES
-from PIL import ImageCms
 
-# Importaciones de la librería interna
-from colour_checker_detection.detection import (
-    SETTINGS_DETECTION_COLORCHECKER_CLASSIC,
-    detect_colour_checkers_templated,
-)
-from colour_checker_detection.detection.common import (
-    sample_colour_checker,
-)
+# New modules
+from colour_checker_detection.calibrator import calculate_ccm
+from colour_checker_detection.detection import SETTINGS_DETECTION_COLORCHECKER_CLASSIC
+from colour_checker_detection.detection.common import sample_colour_checker
+from colour_checker_detection.detector import detect_chart
+from colour_checker_detection.io import load_raw_linear, load_raw_visual
 
 __author__ = "Laboratorio de Arqueología Digital UC"
 __copyright__ = "Copyright 2018 Laboratorio de Arqueología Digital UC"
@@ -48,7 +47,7 @@ __maintainer__ = "Laboratorio de Arqueología Digital UC"
 __email__ = "victor.mendez@uc.cl"
 __status__ = "Development"
 
-__all__ = ["main"]
+__all__ = ["run_batch_process"]
 
 # Configuración de Logging
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
@@ -84,47 +83,14 @@ def get_dynamic_swatch_centers(
     return np.array(centers, dtype=np.float32)  # (24, 2)
 
 
-def read_raw_high_res(path: Path, brightness: float = 1.5, linear: bool = False):
-    """Lectura de RAW: Visual (sRGB) o Lineal (Camera Space)"""
-    from colour.utilities import as_float_array
-
-    if not path.exists():
-        raise FileNotFoundError(f"{path} no existe")
-
-    with rawpy.imread(str(path)) as raw:
-        if linear:
-            # Modo Lineal: 16-bit para preservar detalle en sombras
-            img_rgb = raw.postprocess(
-                gamma=(1, 1),
-                no_auto_bright=True,
-                use_camera_wb=True,
-                output_color=rawpy.ColorSpace.raw,  # type: ignore
-                output_bps=16,
-            )
-            return as_float_array(img_rgb) / 65535.0
-        # Modo Visual
-        img_rgb = raw.postprocess(
-            use_camera_wb=True, bright=brightness, no_auto_bright=True
-        )
-        return as_float_array(img_rgb) / 255.0
-
-
-import json
-
-
 def get_transf_matrix_and_centers(w, h, quad):
     """Calcula la matriz de transformación y los centros reproyectados"""
     rect_std = np.array([[0, 0], [w, 0], [w, h], [0, h]], dtype=np.float32)
 
     # Calcular centros teoricos en el espacio canonico
-    # Usamos la misma logica del common (6x4)
-    # Swatch standard layout
     steps_h = 6
     steps_v = 4
 
-    # Calcular centros (esto asume layout estandar 6x4)
-    # Se puede usar swatch_masks o hacerlo a mano
-    # Simplificado:
     step_x = w / steps_h
     step_y = h / steps_v
 
@@ -145,11 +111,18 @@ def get_transf_matrix_and_centers(w, h, quad):
     return proj_centers
 
 
-def main(images_dir: Path | None = None, output_dir: Path | None = None):
-    # 1. Configuración
+def run_batch_process(
+    images_dir: Path | str,
+    output_dir: Path | str | None = None,
+    dcp_tool_path: Path | str | None = None
+) -> list[dict]:
+
     if images_dir is None:
-        base_dir = Path("G:/colour-checker-detection")  # Asumiendo path del user
-        images_dir = base_dir / "colour_checker_detection" / "local_test"
+        raise ValueError("images_dir argument is mandatory.")
+
+    images_dir = Path(images_dir)
+    if not images_dir.exists():
+         raise FileNotFoundError(f"Images directory {images_dir} not found.")
 
     # BUSCAR IMAGENES (.CR2, .ARW, .RAF)
     img_files = (
@@ -159,22 +132,39 @@ def main(images_dir: Path | None = None, output_dir: Path | None = None):
     )
     if not img_files:
         LOGGER.error("No se encontraron imagenes RAW en %s", images_dir)
-        return
+        return []
 
     # Output Dir
     if output_dir is None:
-        base_dir = Path("G:/colour-checker-detection")
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        # User Request: Save to test_results
-        output_dir = base_dir / "colour_checker_detection" / "test_results" / timestamp
+        output_dir = images_dir / "results" / timestamp
+
+    output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    # dcpTool lookup
+    if dcp_tool_path:
+        dcp_tool_path = Path(dcp_tool_path)
+    else:
+        found = shutil.which("dcpTool")
+        if found:
+            dcp_tool_path = Path(found)
+            LOGGER.info(f"dcpTool encontrado en PATH: {dcp_tool_path}")
+        else:
+            LOGGER.warning("dcpTool no encontrado en PATH. La generación de DCP binarios se omitirá.")
+
+    batch_results = []
 
     for img_path in img_files:
         LOGGER.info("=== PROCESANDO IMAGEN: %s ===", img_path.name)
 
-        # 2. Lectura Visual (sRGB)
+        # 2. Lectura Visual (sRGB) para Detección
         LOGGER.info("Cargando sRGB...")
-        img_srgb = read_raw_high_res(img_path, brightness=1.5, linear=False)
+        try:
+            img_srgb = load_raw_visual(img_path, brightness=1.5)
+        except Exception as e:
+            LOGGER.error(f"Error cargando imagen {img_path}: {e}")
+            continue
 
         # Check rotación vertical
         h, w, _ = img_srgb.shape
@@ -189,15 +179,14 @@ def main(images_dir: Path | None = None, output_dir: Path | None = None):
         settings["working_width"] = w
         settings["working_height"] = h
 
-        # 3. Detección SOLO PLANTILLAS
-        # User Request: "sólo se utilice el método de template"
+        # 3. Detección Wrapper
         method_name = "Templated"
-        detection_func = detect_colour_checkers_templated
+        LOGGER.info(f"Ejecutando Detección por {method_name.upper()}...")
 
         det_found = None
-        LOGGER.info(f"Ejecutando Detección por {method_name.upper()}...")
         try:
-            det_res = detection_func(
+            # Using new detector module
+            det_res = detect_chart(
                 img_srgb,
                 additional_data=True,
                 segmenter_kwargs=settings,
@@ -250,12 +239,18 @@ def main(images_dir: Path | None = None, output_dir: Path | None = None):
         LOGGER.info(f"Procesando Extracción para: {method_name}")
 
         # Iniciando Extracción Lineal
-        img_linear = read_raw_high_res(img_path, linear=True)
+        # Using new io module
+        try:
+            img_linear, as_shot_wb = load_raw_linear(img_path)
+            LOGGER.info(f"    WB Cámara detectado: {as_shot_wb}")
+        except Exception as e:
+            LOGGER.error(f"Error cargando RAW Linear {img_path}: {e}")
+            continue
+
         if is_vertical:
             img_linear = cv2.rotate(img_linear, cv2.ROTATE_90_CLOCKWISE)
 
         # a) Optimizar Orientación en sRGB
-        # Usamos sample_colour_checker para refinar el quad
         visual_data = sample_colour_checker(
             img_srgb, det_found.quadrilateral, rect_canon, samples=32, **settings
         )
@@ -275,14 +270,10 @@ def main(images_dir: Path | None = None, output_dir: Path | None = None):
             swatches_measured = linear_data.swatch_colours
 
             # --- CÁLCULO DE CCM (Matriz) EXPLICITA ---
-            # Usamos Cheung 2004 para obtener la matrix 3x3
-            # M tal que M @ Measured ~= Reference
-            M = colour.characterisation.matrix_colour_correction_Cheung2004(
-                swatches_measured, swatches_ref_adobe
-            )
+            # Using new calibrator module
+            M = calculate_ccm(swatches_measured, swatches_ref_adobe)
 
             # Aplicar la corrección usando la matriz calculada
-            # Nota: colour.algebra.vector_dot aplica M a los vectores RGB
             swatches_corrected = np.einsum("ij,...j->...i", M, swatches_measured)
 
             # --- EVALUACIÓN DELTA E ---
@@ -320,8 +311,9 @@ def main(images_dir: Path | None = None, output_dir: Path | None = None):
                 json_data = {
                     "image": img_path.name,
                     "method": method_name,
+                    "wb_as_shot": as_shot_wb, # Report WB as requested
                     "reference": "ColorChecker24 - After November 2014 (D65)",
-                    "ccm": M.tolist(),  # Exportamos la matriz 3x3
+                    "ccm": M.tolist(),
                     "swatches": [],
                 }
 
@@ -341,6 +333,9 @@ def main(images_dir: Path | None = None, output_dir: Path | None = None):
                     json.dump(json_data, f, indent=4)
                 LOGGER.info("    -> JSON guardado.")
 
+                # Append to batch results
+                batch_results.append(json_data)
+
             except Exception as e:
                 LOGGER.error(f"Error generando JSON: {e}")
 
@@ -356,14 +351,12 @@ def main(images_dir: Path | None = None, output_dir: Path | None = None):
             # 3. 3D LUT (.cube)
             LOGGER.info("    Generando 3D LUT (.cube)...")
             try:
-                # Tamaño estándar 33x33x33
                 size = 33
                 LUT = colour.LUT3D(
                     name=f"CCM for {img_path.name}",
                     size=size,
                 )
                 LUT.table = np.einsum("ij,...j->...i", M, LUT.table)
-                # Clip para asegurar validez
                 LUT.table = np.clip(LUT.table, 0, 1)
 
                 lut_path = output_dir / f"{base_name}.cube"
@@ -372,74 +365,43 @@ def main(images_dir: Path | None = None, output_dir: Path | None = None):
             except Exception as e:
                 LOGGER.error(f"Error generando LUT: {e}")
 
-            # 4. ICC Profile (Matrix + Linear TRC)
-            LOGGER.info("    Generando ICC Profile...")
-            try:
-                # Intentamos usar Pillow ImageCms para crear un perfil sRGB-like pero con nuestra matriz
-                # Nota: ImageCms no permite crear perfiles matrix/shaper arbitrarios facilmente desde cero.
-                # Sin embargo, podemos *intentar* construir uno si tenemos los datos.
-                # Como fallback robusto, omitiremos la creacion binaria compleja si no es vital,
-                # pero el usuario lo pidió. Haremos un "Best Effort" informando si falla.
-                # Para un perfil de entrada (Input Profile), necesitamos tags específicos.
-                LOGGER.warning(
-                    "    -> Generación binaria nativa de ICC complejo limitada en Python puro."
-                )
-                # No hay metodo directo 'write_icc(matrix)' en Pillow. Se requiere lcms2 bindings completos o manipular bytes.
-                # Por ahora, guardamos un texto informativo o saltamos.
-                # SI el usuario tiene algun perfil base, se podria editar, pero no tenemos uno.
-                pass
-            except Exception as e:
-                LOGGER.error(f"Error generando ICC: {e}")
+            # 4. ICC Profile (Skipped)
 
             # 5. DCP (XML + Binary via dcpTool)
             LOGGER.info("    Generando DCP (Camera Profile)...")
             try:
-                # Generar XML compatible con dcpTool
-                # Formato simple para matriz de color
-                # ColorMatrix1: D65 (que es lo que estamos haciendo, D65 a XYZ/AdobeRGB)
-                # La calibracion DCP suele ser RAW -> XYZ (D50).
-                # Nuestro M es Measured(Linear) -> AdobeRGB(Linear).
-                # AdobeRGB(Linear) ~= XYZ (con matriz de conversion).
-                # Simplificación: Asumimos que queremos aplicar M sobre los datos RAW para llegar al target.
+                xml_content = f"\"<dcpData>\n    <ProfileName>{base_name}</ProfileName>\n    <ColorMatrix1 Rows=\"3\" Cols=\"3\">\n        {M[0, 0]:.6f} {M[0, 1]:.6f} {M[0, 2]:.6f}\n        {M[1, 0]:.6f} {M[1, 1]:.6f} {M[1, 2]:.6f}\n        {M[2, 0]:.6f} {M[2, 1]:.6f} {M[2, 2]:.6f}\n    </ColorMatrix1>\n    <CalibrationIlluminant1>21</CalibrationIlluminant1>\n</dcpData>\""
 
-                # DCP XML estructura basica
-                xml_content = f"""<dcpData>
+                xml_path = output_dir / f"{base_name}.xml"
+                dcp_path_out = output_dir / f"{base_name}.dcp"
+
+                # Re-using f-string properly
+                xml_content = f'''<dcpData>
     <ProfileName>{base_name}</ProfileName>
     <ColorMatrix1 Rows="3" Cols="3">
         {M[0, 0]:.6f} {M[0, 1]:.6f} {M[0, 2]:.6f}
         {M[1, 0]:.6f} {M[1, 1]:.6f} {M[1, 2]:.6f}
         {M[2, 0]:.6f} {M[2, 1]:.6f} {M[2, 2]:.6f}
     </ColorMatrix1>
-    <CalibrationIlluminant1>21</CalibrationIlluminant1> <!-- D65 -->
-</dcpData>"""
-                # Nota: CalibrationIlluminant1 21 = D65.
-                # ColorMatrix2 usualmente es stdA (2856K). Si solo hay 1, se usa para todo.
-
-                xml_path = output_dir / f"{base_name}.xml"
-                dcp_path = output_dir / f"{base_name}.dcp"
+    <CalibrationIlluminant1>21</CalibrationIlluminant1>
+</dcpData>'''
 
                 with open(xml_path, "w", encoding="utf-8") as f:
                     f.write(xml_content)
                 LOGGER.info("    -> XML DCP guardado.")
 
-                # LLAMAR A DCPTOOL EXTERNO
-                dcp_tool_path = Path(
-                    "g:/colour-checker-detection/external/dcptool/dcpTool.exe"
-                )
-                if dcp_tool_path.exists():
-                    cmd = [str(dcp_tool_path), "-c", str(xml_path), str(dcp_path)]
+                if dcp_tool_path and dcp_tool_path.exists():
+                    cmd = [str(dcp_tool_path), "-c", str(xml_path), str(dcp_path_out)]
                     LOGGER.info(f"    Ejecutando dcpTool: {' '.join(cmd)}")
                     subprocess.run(cmd, check=True, capture_output=True)
                     LOGGER.info("    -> .dcp Generado Exitosamente.")
                 else:
-                    LOGGER.error(
-                        f"    No se encontró dcpTool en {dcp_tool_path}. Solo se guardó el XML."
-                    )
+                    LOGGER.info("    dcpTool no disponible o no encontrado. DCP binario omitido.")
 
             except Exception as e:
                 LOGGER.error(f"Error generando DCP: {e}")
 
-            # 7. Visualización (Updated to reflect Corrected logic)
+            # 7. Visualización
             fig = plt.figure(figsize=(18, 10))
             gs = fig.add_gridspec(2, 3)
 
@@ -519,7 +481,6 @@ def main(images_dir: Path | None = None, output_dir: Path | None = None):
             ax5 = fig.add_subplot(gs[1, 2])
             LOGGER.info("    Generando vista previa de imagen corregida...")
             # Aplicar matriz a la imagen lineal completa
-            # Flatten, dot, reshape
             h_im, w_im, c_im = img_linear.shape
             img_lin_flat = img_linear.reshape(-1, 3)
             img_corr_flat = np.einsum("ij,...j->...i", M, img_lin_flat)
@@ -535,9 +496,19 @@ def main(images_dir: Path | None = None, output_dir: Path | None = None):
             out_path_img = output_dir / f"{base_name}.png"
             plt.savefig(out_path_img, bbox_inches="tight")
             LOGGER.info("Resultado de corrección guardado en: %s", out_path_img)
-
             plt.close(fig)
 
+    return batch_results
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Colour Checker Detection & Correction Batch Process")
+    parser.add_argument("--images_dir", type=str, required=True, help="Directory containing RAW images")
+    parser.add_argument("--output_dir", type=str, default=None, help="Directory to save results")
+    parser.add_argument("--dcp_tool_path", type=str, default=None, help="Path to dcpTool.exe")
+
+    args = parser.parse_args()
+
+    try:
+        run_batch_process(args.images_dir, args.output_dir, args.dcp_tool_path)
+    except Exception as e:
+        LOGGER.error(f"Execution Error: {e}")

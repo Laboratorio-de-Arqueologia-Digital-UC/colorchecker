@@ -160,7 +160,7 @@ El repositorio incluye herramientas para diferentes etapas del procesado, desde 
 
         .. code-block:: bash
 
-            uv run python colour_checker_detection/correction_template.py
+            uv run python colour_checker_detection/correction_template.py --images_dir ruta/a/mis/raws --output_dir ruta/salida
 
 
 Herramientas de Mantenimiento

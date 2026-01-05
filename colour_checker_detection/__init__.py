@@ -27,6 +27,7 @@ from colour_checker_detection import utilities  # noqa: F401
 
 # isort: split
 
+from .calibrator import calculate_ccm, calculate_wb_multipliers
 from .detection import (
     SETTINGS_INFERENCE_COLORCHECKER_CLASSIC,
     SETTINGS_INFERENCE_COLORCHECKER_CLASSIC_MINI,
@@ -45,6 +46,8 @@ from .detection import (
     segmenter_default,
     segmenter_templated,
 )
+from .detector import detect_chart
+from .io import load_raw_linear, load_raw_visual
 
 __author__ = "Colour Developers"
 __copyright__ = "Copyright 2018 Colour Developers"
@@ -70,6 +73,11 @@ __all__ = [
     "plot_detection_results",
     "segmenter_default",
     "segmenter_templated",
+    "calculate_ccm",
+    "calculate_wb_multipliers",
+    "detect_chart",
+    "load_raw_linear",
+    "load_raw_visual",
 ]
 
 ROOT_RESOURCES: str = os.path.join(os.path.dirname(__file__), "resources")

@@ -30,7 +30,7 @@ def test_imports_and_dependencies():
 
 def test_detection_logic_basic(tmp_path):
     """✅ Detección de ColorChecker y ✅ Generación de salidas"""
-    from colour_checker_detection.correction_template import main
+    from colour_checker_detection.correction_template import run_batch_process
 
     # Setup paths
     base_dir = Path("G:/colour-checker-detection/colour_checker_detection")
@@ -47,7 +47,7 @@ def test_detection_logic_basic(tmp_path):
     with pytest.MonkeyPatch.context() as m:
         m.setattr(plt, "show", lambda: None)
 
-        main(images_dir=images_dir, output_dir=output_dir)
+        run_batch_process(images_dir=images_dir, output_dir=output_dir)
 
     # Validar salidas
     assert output_dir.exists()

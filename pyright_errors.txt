@@ -1,0 +1,8 @@
+g:\colour-checker-detection\colour_checker_detection\calibrator.py
+  g:\colour-checker-detection\colour_checker_detection\calibrator.py:22:6 - error: Function with declared return type "list[float]" must return value on all code paths
+    "None" is not assignable to "list[float]" (reportReturnType)
+g:\colour-checker-detection\colour_checker_detection\io.py
+  g:\colour-checker-detection\colour_checker_detection\io.py:29:32 - error: "ColorSpace" is not a known attribute of module "rawpy" (reportAttributeAccessIssue)
+g:\colour-checker-detection\colour_checker_detection\tests\test_correction_template.py
+  g:\colour-checker-detection\colour_checker_detection\tests\test_correction_template.py:33:62 - error: "main" is unknown import symbol (reportAttributeAccessIssue)
+3 errors, 0 warnings, 0 informations
