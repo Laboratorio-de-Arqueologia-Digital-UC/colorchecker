@@ -112,8 +112,7 @@ def run_benchmark_analysis(images_dir: Path):
                     h, w = w, h  # swap
 
                 settings = SETTINGS_DETECTION_COLORCHECKER_CLASSIC.copy()
-                settings["working_width"] = w
-                settings["working_height"] = h
+                # DO NOT OVERRIDE working_width and working_height.
 
                 rect_canon = np.array(
                     [[0, 0], [w, 0], [w, h], [0, h]], dtype=np.float32
@@ -154,8 +153,15 @@ def run_benchmark_analysis(images_dir: Path):
                     )
 
                 # Process Colors
-                quad_seg = res_seg[0].quadrilateral if has_seg else None
-                quad_temp = res_temp[0].quadrilateral if has_temp else None
+                quad_seg = res_seg[0].quadrilateral.copy() if has_seg else None
+                quad_temp = res_temp[0].quadrilateral.copy() if has_temp else None
+                
+                default_working_width = settings.get("working_width", 1440)
+                max_dim = max(h, w)
+                if max_dim > default_working_width:
+                    scale_ratio = max_dim / default_working_width
+                    if quad_seg is not None: quad_seg *= scale_ratio
+                    if quad_temp is not None: quad_temp *= scale_ratio
 
                 settings_extract = settings.copy()
                 settings_extract["reference_values"] = None

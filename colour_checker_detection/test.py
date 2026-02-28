@@ -359,11 +359,15 @@ def run_benchmark(
             h_proc, w_proc = img_processing.shape[:2]
             LOGGER.info("Dimensiones Procesamiento: %dx%d px", w_proc, h_proc)
 
-            # Settings
-            resolution_settings = {
+            # Settings for visualization (full res)
+            vis_settings = {
                 "working_width": w_proc,
                 "working_height": h_proc,
             }
+            
+            # Default working width internally used by detection
+            default_working_width = 1440
+            scale_ratio = max(h_proc, w_proc) / default_working_width if max(h_proc, w_proc) > default_working_width else 1.0
 
             results = {}
             inference_bboxes = []
@@ -374,11 +378,11 @@ def run_benchmark(
                 # Solo Detección (Sin debug manual)
                 res_seg = detect_colour_checkers_segmentation(
                     img_processing,
-                    segmenter_kwargs=resolution_settings,
-                    extractor_kwargs=resolution_settings,
                     additional_data=True,
-                    **resolution_settings,
                 )
+                for det in res_seg:
+                    if det.quadrilateral is not None:
+                        det.quadrilateral = det.quadrilateral * scale_ratio
                 LOGGER.info("   Encontrados: %d", len(res_seg))
                 results["Segmentación"] = res_seg
             except Exception as e:
@@ -398,10 +402,11 @@ def run_benchmark(
                         img_processing,
                         inferencer=custom_inferencer,
                         inferred_confidence=0.4,
-                        extractor_kwargs=resolution_settings,
                         additional_data=True,
-                        **resolution_settings,
                     )
+                    for det in res_inf:
+                        if det.quadrilateral is not None:
+                            det.quadrilateral = det.quadrilateral * scale_ratio
                     LOGGER.info("   Encontrados: %d", len(res_inf))
 
                     # FILTRADO DE RESULTADOS: Top-1
@@ -427,11 +432,11 @@ def run_benchmark(
             try:
                 res_tpl = detect_colour_checkers_templated(
                     img_processing,
-                    segmenter_kwargs=resolution_settings,
-                    extractor_kwargs=resolution_settings,
                     additional_data=True,
-                    **resolution_settings,
                 )
+                for det in res_tpl:
+                    if det.quadrilateral is not None:
+                        det.quadrilateral = det.quadrilateral * scale_ratio
                 LOGGER.info("   Encontrados: %d", len(res_tpl))
                 results["Plantillas"] = res_tpl
             except Exception as e:
@@ -446,7 +451,7 @@ def run_benchmark(
                 results,
                 inference_bboxes,
                 img_path.name,
-                resolution_settings,
+                vis_settings,
             )
 
         except Exception:

@@ -177,8 +177,7 @@ def run_batch_process(
 
         # Settings
         settings = SETTINGS_DETECTION_COLORCHECKER_CLASSIC.copy()
-        settings["working_width"] = w
-        settings["working_height"] = h
+        # DO NOT OVERRIDE working_width and working_height.
 
         # 3. Detección Wrapper
         method_name = "Templated"
@@ -251,9 +250,16 @@ def run_batch_process(
         if is_vertical:
             img_linear = cv2.rotate(img_linear, cv2.ROTATE_90_CLOCKWISE)
 
+        quad = det_found.quadrilateral.copy()
+        default_working_width = settings.get("working_width", 1440)
+        max_dim = max(h, w)
+        if max_dim > default_working_width:
+            scale_ratio = max_dim / default_working_width
+            quad = quad * scale_ratio
+
         # a) Optimizar Orientación en sRGB
         visual_data = sample_colour_checker(
-            img_srgb, det_found.quadrilateral, rect_canon, samples=32, **settings
+            img_srgb, quad, rect_canon, samples=32, **settings
         )
 
         quad_optimized = visual_data.quadrilateral

@@ -120,8 +120,8 @@ def process_image(img_path: Path, output_dir: Path | None = None):
 
     # Settings
     settings = SETTINGS_DETECTION_COLORCHECKER_CLASSIC.copy()
-    settings["working_width"] = w
-    settings["working_height"] = h
+    
+    # DO NOT OVERRIDE working_width and working_height.
 
     # 3. Detección Multi-Método
     methods_to_try = {
@@ -136,8 +136,6 @@ def process_image(img_path: Path, output_dir: Path | None = None):
             det_res = detection_func(
                 img_srgb,
                 additional_data=True,
-                segmenter_kwargs=settings,
-                extractor_kwargs=settings,
                 **settings,
             )
             if det_res:
@@ -190,9 +188,19 @@ def process_image(img_path: Path, output_dir: Path | None = None):
         if is_vertical:
             img_linear = cv2.rotate(img_linear, cv2.ROTATE_90_CLOCKWISE)
 
+
+        quad = det.quadrilateral.copy()
+        
+        # Scale the returned quadrilateral back to original full resolution
+        default_working_width = settings.get("working_width", 1440)
+        max_dim = max(h, w)
+        if max_dim > default_working_width:
+            scale_ratio = max_dim / default_working_width
+            quad = quad * scale_ratio
+        
         LOGGER.info(f"  [{method_name}] Optimizando Orientación...")
         visual_data = sample_colour_checker(
-            img_srgb, det.quadrilateral, rect_canon, samples=32, **settings
+            img_srgb, quad, rect_canon, samples=32, **settings
         )
 
         quad_optimized = visual_data.quadrilateral
