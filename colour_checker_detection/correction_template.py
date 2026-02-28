@@ -150,9 +150,17 @@ def run_batch_process(
             dcp_tool_path = Path(found)
             LOGGER.info(f"dcpTool encontrado en PATH: {dcp_tool_path}")
         else:
-            LOGGER.warning(
-                "dcpTool no encontrado en PATH. La generación de DCP binarios se omitirá."
-            )
+            # Fallback a ubicación local en el repositorio
+            proj_root = Path(__file__).parents[1]
+            local_dcptool = proj_root / "external" / "dcptool" / "dcpTool.exe"
+            if local_dcptool.exists():
+                dcp_tool_path = local_dcptool
+                LOGGER.info(f"dcpTool encontrado localmente: {dcp_tool_path}")
+            else:
+                LOGGER.warning(
+                    f"dcpTool no encontrado en PATH ni en {local_dcptool}. "
+                    "La generación de DCP binarios se omitirá."
+                )
 
     batch_results = []
 
