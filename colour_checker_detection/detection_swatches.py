@@ -207,10 +207,15 @@ def process_image(img_path: Path, output_dir: Path | None = None):
 
                     # Swatches Preview
                     swatch_grid = np.zeros((4, 6, 3))
+                    
+                    # Normalize globally by the brightest patch (usually white) or just max value
+                    vals_vis = np.clip(vals, 0, None)
+                    max_val = np.max(vals_vis) if np.max(vals_vis) > 0 else 1
+                    
                     for i in range(24):
                         r, c = divmod(i, 6)
-                        color_vis = np.power(np.clip(vals[i], 0, 1), 1 / 2.2)
-                        color_vis /= np.max(color_vis) if np.max(color_vis) > 0 else 1
+                        # We apply gamma correction for display and normalize using the global max
+                        color_vis = np.power(np.clip(vals_vis[i] / max_val, 0, 1), 1 / 2.2)
                         swatch_grid[r, c] = color_vis
 
                         vis_lum = np.mean(color_vis)
