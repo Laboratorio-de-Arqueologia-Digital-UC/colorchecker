@@ -106,8 +106,10 @@ def process_image(img_path: Path, output_dir: Path | None = None):
 
     # Settings
     settings = SETTINGS_DETECTION_COLORCHECKER_CLASSIC.copy()
-    settings["working_width"] = w
-    settings["working_height"] = h
+    
+    # DO NOT OVERRIDE working_width and working_height. The detection algorithms 
+    # (DBSCAN eps, bilateral filter sizes, contour approximation) are tuned for 
+    # the default working_width (1440). Using full resolution breaks the segmentation.
 
     # 3. Detección Multi-Método
     methods_to_try = {
@@ -122,8 +124,6 @@ def process_image(img_path: Path, output_dir: Path | None = None):
             det_res = detection_func(
                 img_srgb,
                 additional_data=True,
-                segmenter_kwargs=settings,
-                extractor_kwargs=settings,
                 **settings,
             )
             if det_res:
@@ -132,11 +132,14 @@ def process_image(img_path: Path, output_dir: Path | None = None):
             else:
                 LOGGER.warning(f"   {name}: No se encontró nada.")
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             LOGGER.warning(f"   {name}: Error -> {e}")
 
     if not all_detections:
         LOGGER.warning("No se detectó nada por ningún método en %s.", img_path.name)
         return {}
+
 
     # Rectangulo canonico para sampleo
     rect_canon = np.array([[0, 0], [w, 0], [w, h], [0, h]], dtype=np.float32)
@@ -152,10 +155,20 @@ def process_image(img_path: Path, output_dir: Path | None = None):
         if is_vertical:
             img_linear = cv2.rotate(img_linear, cv2.ROTATE_90_CLOCKWISE)
 
+        quad = det.quadrilateral.copy()
+        
+        # The segmenter internally reformats the image to working_width
+        # We must scale the returned quadrilateral back to original full resolution
+        default_working_width = settings.get("working_width", 1440)
+        max_dim = max(h, w)
+        if max_dim > default_working_width:
+            scale_ratio = max_dim / default_working_width
+            quad = quad * scale_ratio
+        
         # a) Optimizar Orientación en sRGB
         LOGGER.info(f"  [{method_name}] Optimizando Orientación...")
         visual_data = sample_colour_checker(
-            img_srgb, det.quadrilateral, rect_canon, samples=32, **settings
+            img_srgb, quad, rect_canon, samples=32, **settings
         )
 
         quad_optimized = visual_data.quadrilateral
@@ -231,7 +244,7 @@ def process_image(img_path: Path, output_dir: Path | None = None):
 def main(images_dir: Path | None = None, output_dir: Path | None = None):
     # 1. Configuración
     if images_dir is None:
-        base_dir = Path("G:/colour-checker-detection")  # Asumiendo path del user
+        base_dir = Path(__file__).parents[1]
         images_dir = base_dir / "colour_checker_detection" / "local_test"
 
     # BUSCAR IMAGENES (.CR2, .ARW, .RAF)
@@ -246,7 +259,7 @@ def main(images_dir: Path | None = None, output_dir: Path | None = None):
 
     # Output Dir
     if output_dir is None:
-        base_dir = Path("G:/colour-checker-detection")
+        base_dir = Path(__file__).parents[1]
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_dir = base_dir / "colour_checker_detection" / "test_results" / timestamp
 

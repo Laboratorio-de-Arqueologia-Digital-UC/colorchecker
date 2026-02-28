@@ -28,7 +28,7 @@ def test_pipeline_and_ccm(tmp_path):
     """✅ Pipeline end-to-end y ✅ Cálculo CCM"""
     from colour_checker_detection.correction_swatches import process_image
 
-    base_dir = Path("G:/colour-checker-detection/colour_checker_detection")
+    base_dir = Path(__file__).parents[1]
     images_dir = base_dir / "local_test"
     output_dir = tmp_path / "correction_output"
     output_dir.mkdir()

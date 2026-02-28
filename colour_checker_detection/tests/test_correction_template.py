@@ -33,7 +33,7 @@ def test_detection_logic_basic(tmp_path):
     from colour_checker_detection.correction_template import run_batch_process
 
     # Setup paths
-    base_dir = Path("G:/colour-checker-detection/colour_checker_detection")
+    base_dir = Path(__file__).parents[1]
     images_dir = base_dir / "local_test"
     output_dir = tmp_path / "output_basic"
     output_dir.mkdir()

@@ -629,7 +629,7 @@ def extractor_templated(
     for cluster in segmentation_data.clusters:
         mask = np.array(
             [
-                cv2.pointPolygonTest(cluster, tuple(centroid), False) == 1
+                cv2.pointPolygonTest(cluster, tuple(centroid), False) >= 0
                 for centroid in all_centroids
             ]
         )
@@ -637,11 +637,12 @@ def extractor_templated(
         clustered_centroids.append(centroids_in_cluster)
 
     nr_expected_swatches = len(template.swatch_centroids)
-    filtered_centroids = [
-        as_int32_array(centroids)
-        for centroids in clustered_centroids
-        if nr_expected_swatches / 3 <= len(centroids) <= nr_expected_swatches
-    ]
+    filtered_centroids = []
+    passing_indices = []
+    for i, centroids in enumerate(clustered_centroids):
+        if nr_expected_swatches / 3 <= len(centroids) <= nr_expected_swatches:
+            filtered_centroids.append(as_int32_array(centroids))
+            passing_indices.append(i)
 
     clustered_centroids = filtered_centroids or []
 
@@ -684,7 +685,7 @@ def extractor_templated(
     starting_pts = ordered_clustered_centroids
 
     warping_data = [
-        WarpingData(cluster_id) for cluster_id in range(len(clustered_centroids))
+        WarpingData(passing_indices[i]) for i in range(len(clustered_centroids))
     ]
     best_global_cost = np.inf
 

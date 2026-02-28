@@ -29,7 +29,7 @@ def test_analysis_logic(tmp_path):
         run_benchmark_analysis,
     )
 
-    base_dir = Path("G:/colour-checker-detection/colour_checker_detection")
+    base_dir = Path(__file__).parents[1]
     images_dir = base_dir / "local_test"
 
     if not images_dir.exists() or not any(images_dir.glob("*.ARW")):
@@ -72,7 +72,7 @@ def test_main_execution(capsys):
     """✅ Output de tablas (stdout)"""
     from colour_checker_detection.correction_swatches_benchmark import main
 
-    base_dir = Path("G:/colour-checker-detection/colour_checker_detection")
+    base_dir = Path(__file__).parents[1]
     images_dir = base_dir / "local_test"
 
     if not images_dir.exists() or not any(images_dir.glob("*.ARW")):

@@ -404,7 +404,7 @@ def process_image(img_path: Path, output_dir: Path | None = None):
 def main(images_dir: Path | None = None, output_dir: Path | None = None):
     # 1. Configuración
     if images_dir is None:
-        base_dir = Path("G:/colour-checker-detection")  # Asumiendo path del user
+        base_dir = Path(__file__).parents[1]
         images_dir = base_dir / "colour_checker_detection" / "local_test"
 
     # BUSCAR IMAGENES (.CR2, .ARW, .RAF)
@@ -419,7 +419,7 @@ def main(images_dir: Path | None = None, output_dir: Path | None = None):
 
     # Output Dir
     if output_dir is None:
-        base_dir = Path("G:/colour-checker-detection")
+        base_dir = Path(__file__).parents[1]
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_dir = base_dir / "colour_checker_detection" / "test_results" / timestamp
     output_dir.mkdir(parents=True, exist_ok=True)

@@ -29,8 +29,8 @@ def test_full_benchmark(tmp_path):
     """Test del benchmark completo usando imágenes locales."""
     from colour_checker_detection.test import run_benchmark
 
-    # Path hardcoded conocido del proyecto (según instrucción del usuario)
-    base_dir = Path("G:/colour-checker-detection/colour_checker_detection")
+    # Path dinámico del proyecto
+    base_dir = Path(__file__).parents[1]
     images_dir = base_dir / "local_test"
     model_path = base_dir / "models/colour-checker-detection-l-seg.pt"
 

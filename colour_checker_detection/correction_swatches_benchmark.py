@@ -319,7 +319,7 @@ def run_benchmark_analysis(images_dir: Path):
 
 def main(images_dir: Path | None = None):
     if images_dir is None:
-        base_dir = Path("G:/colour-checker-detection")
+        base_dir = Path(__file__).parents[1]
         images_dir = base_dir / "colour_checker_detection" / "local_test"
 
     results = run_benchmark_analysis(images_dir)
